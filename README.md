@@ -7,6 +7,7 @@ This repository serves as a personal library of frontends. Each frontend lives i
 | Folder | Name | Stack | Run command | Port |
 | :--- | :--- | :--- | :--- | :--- |
 | 01-prism-hero | Prism Hero | Next.js, Tailwind, shadcn | `npm install && npm run dev` | 3000 |
+| 02-gateway-flow | Gateway Flow | Next.js, Tailwind, shadcn | `npm install && npm run dev` | 3002 |
 
 ## How to add a new frontend
 
