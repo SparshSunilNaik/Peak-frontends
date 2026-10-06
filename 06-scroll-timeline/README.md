@@ -59,3 +59,33 @@ All props are optional. Pass them to `<Timeline />` to customise the component.
 | `duration` | `number` | `undefined` | Overrides `scrollDuration`; controls reveal animation length in seconds |
 | `scrollDuration` | `number` | `1.2` | Fallback reveal duration (seconds) used when `duration` is omitted |
 
+## Reduced-Motion Behaviour
+
+When the user has `prefers-reduced-motion: reduce` set in their OS/browser:
+
+- All stems and dots are set to their final state **immediately** with `gsap.set` (no tween).
+- The centre line is shown at full width instantly.
+- Text is shown at full opacity without the line-mask slide-up animation.
+- The horizontal slide still plays (it is driven by scroll position, not time), but no
+  time-based easing is applied.
+
+The preference is read at runtime via `useSyncExternalStore` so it reacts live if the
+user changes their OS setting while the page is open.
+
+## GSAP ≥ 3.13 Requirement
+
+The component imports `SplitText` from `gsap/SplitText` and uses its `mask: "lines"`
+option. **Both SplitText and the `mask` option became freely available in gsap 3.13.0**
+(released 2024). Older versions shipped SplitText only in the paid "Shockingly Green"
+membership package.
+
+This project installs `gsap@latest` (currently 3.15.x). Do **not** downgrade. Do
+**not** install the separate `@gsap/shockingly` package.
+
+Verify after `npm install`:
+
+```bash
+npm ls gsap          # must show 3.13.0 or higher
+ls node_modules/gsap/SplitText.js   # must exist
+```
+
