@@ -15,6 +15,26 @@ The demo ships two screens:
 2. **Timeline section** – the pinned horizontal track with 7 milestones (4 above the centre line, 3 below) spanning 2020–2026.
 3. **Footer screen** – a single closing line after the timeline unpins.
 
+## Install and Run
+
+```bash
+# From the repo root:
+cd 06-scroll-timeline
+npm install
+npm run dev
+```
+
+Then open **<http://localhost:3006>** in your browser.
+
+> **Port**: always 3006 (`"dev": "next dev -p 3006"` in `package.json`).
+
+### Why `components/ui`?
+
+`shadcn` scaffolds all primitive components into `components/ui/`. The project
+follows this convention so that the timeline component can be dropped in as a
+vendored file without any path changes – and so that future shadcn component
+installs (`npx shadcn add <name>`) land in the right place automatically.
+
 ## How to Use It
 
 1. Open the page at <http://localhost:3006>.
