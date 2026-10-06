@@ -89,3 +89,36 @@ npm ls gsap          # must show 3.13.0 or higher
 ls node_modules/gsap/SplitText.js   # must exist
 ```
 
+## Troubleshooting
+
+### Sticky pinning does not work / timeline jumps instead of scrolling
+
+`position: sticky` requires that **no ancestor element has `overflow: hidden`,
+`overflow: auto`, or `overflow: scroll`**. The `app/page.tsx` renders the demo
+with no wrapper element for exactly this reason. If you embed `<TimelineDemo />`
+inside a scrollable container, remove any `overflow` restriction from that container.
+
+### GSAP version is wrong
+
+If you see `SplitText is not a constructor` or `mask` option has no effect, your
+installed `gsap` is below 3.13. Run:
+
+```bash
+npm install gsap@latest
+```
+
+### Header image does not load
+
+The default `imageUrl` points to `cdn.21st.dev`. This requires an internet connection.
+If the URL returns a non-200 response, pass your own `imageUrl` prop to `<Timeline />`
+pointing to a reachable image.
+
+### Horizontal slide is not smooth
+
+Make sure `scrollDuration` or `duration` is not set to 0. The minimum clamped value
+is `0.2` seconds (`Math.max(0.2, animationDuration)`). Very small values will make
+the reveals appear instantaneous.
+
+## Deviations from the Original Spec
+
+None.
