@@ -41,3 +41,21 @@ installs (`npx shadcn add <name>`) land in the right place automatically.
 2. Scroll down past the intro screen — the section pins immediately.
 3. Continue scrolling; the orange track grows, stems draw in, and text reveals slide up.
 4. The timeline unpins once all milestones have passed and the footer screen takes over.
+
+## `TimelineProps`
+
+All props are optional. Pass them to `<Timeline />` to customise the component.
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `title` | `string` | `"Product Storyline"` | Heading displayed in the top-left of the timeline |
+| `periodLabel` | `string` | `"2020-2026"` | Period label shown in the bottom-left |
+| `textColor` | `string` | `var(--color-foreground, #000000)` | CSS colour for headings and milestone labels |
+| `mutedTextColor` | `string` | `var(--color-muted-foreground, #3f3f46)` | CSS colour for body copy and period label |
+| `activeColor` | `string` | `"#ff5f00"` | Colour of the centre line, stems, and dots |
+| `backgroundColor` | `string` | `var(--color-background, #ffffff)` | Background of the sticky stage |
+| `imageUrl` | `string` | CDN url | URL of the header image (left column) |
+| `imageAlt` | `string` | `"Modern office workspace"` | Alt text for the header image |
+| `duration` | `number` | `undefined` | Overrides `scrollDuration`; controls reveal animation length in seconds |
+| `scrollDuration` | `number` | `1.2` | Fallback reveal duration (seconds) used when `duration` is omitted |
+
