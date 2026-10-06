@@ -1,36 +1,23 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 06-scroll-timeline
 
-## Getting Started
+## What It Demonstrates
 
-First, run the development server:
+A **scroll-pinned horizontal timeline** built with GSAP ScrollTrigger and SplitText.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+- **Sticky pinning** – the `<section>` is `h-[200vw]` tall; the inner viewport-sized stage becomes `position: sticky` so it stays fixed while the document scrolls past it.
+- **Horizontal slide** – as the user scrolls, GSAP scrubs the whole track sideways with `xPercent`, revealing milestones one by one.
+- **Stem + dot draw-in** – each vertical stem (`scaleY` from 0 → 1) and endpoint dot (`scale` from 0 → 1) animate in as their milestone enters the viewport.
+- **SplitText line-mask reveals** – year/month headings and body copy are split into lines; each line slides up from behind a clip mask (`mask: "lines"` option, available in GSAP ≥ 3.13).
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+The demo ships two screens:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+1. **Lead-in screen** – full-viewport intro with a bouncing arrow telling the user to scroll.
+2. **Timeline section** – the pinned horizontal track with 7 milestones (4 above the centre line, 3 below) spanning 2020–2026.
+3. **Footer screen** – a single closing line after the timeline unpins.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## How to Use It
 
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+1. Open the page at <http://localhost:3006>.
+2. Scroll down past the intro screen — the section pins immediately.
+3. Continue scrolling; the orange track grows, stems draw in, and text reveals slide up.
+4. The timeline unpins once all milestones have passed and the footer screen takes over.
