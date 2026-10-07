@@ -12,6 +12,7 @@ This repository serves as a personal library of frontends. Each frontend lives i
 | 04-agentic-factory-3d | Agentic Factory 3D | Next.js, Tailwind, shadcn, three | `npm install && npm run dev` | 3004 |
 | 05-image-stream-hero | Image Stream Hero | Next.js, Tailwind, shadcn | `npm install && npm run dev` | 3005 |
 | 06-scroll-timeline | Scroll Timeline | Next.js, Tailwind, shadcn, gsap | `npm install && npm run dev` | 3006 |
+| 07-morph-gallery | Morph Gallery | Next.js, Tailwind, shadcn | `npm install && npm run dev` | 3007 |
 
 ## How to add a new frontend
 
