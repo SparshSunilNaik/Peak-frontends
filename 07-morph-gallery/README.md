@@ -48,3 +48,9 @@ It also employs parallax drift: both frames slide by different amounts and in op
 ### CORS Requirement & Fallback
 
 Textures require CORS. An image served without the `Access-Control-Allow-Origin` header cannot be uploaded to WebGL at all. If the component detects this, it falls back to a plain DOM cross-fade. The gallery still works completely, but it switches to standard CSS opacity fades. This avoids a black rectangle when shaders are blocked.
+
+## Behaviors
+
+- **Keyboard & Swipe**: You can navigate using the left/right arrow keys or by swiping across the image (pointer drag).
+- **Autoplay**: If `autoplay` is greater than 0, the gallery advances automatically. It pauses automatically when hovering over the gallery, when the gallery is focused, or when the browser tab is hidden in the background.
+- **Reduced Motion**: If the user has `prefers-reduced-motion: reduce` enabled in their OS or browser, the gallery still functions but drops the animation: the next slide appears instantly.
