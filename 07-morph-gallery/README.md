@@ -36,3 +36,15 @@ We follow the standard shadcn convention. Components placed in `components/ui` f
 | `defaultIndex` | `number` | `0` | Initial active index. |
 | `onIndexChange` | `(index: number) => void` | `undefined` | Callback when the active index changes. |
 | `className` | `string` | `""` | Additional CSS classes for the container. |
+
+## How It Works
+
+### Shader Dissolve
+
+The transition is a single full-screen fragment shader pass over two textures. An fbm noise field gives every pixel a threshold, and the progress value sweeps past those thresholds, so the outgoing frame tears away in drifting tatters rather than fading uniformly. The threshold is biased by the luminance of the *incoming* frame, which makes its bright areas burn through first — a detail that stops it from reading as a generic dissolve filter.
+
+It also employs parallax drift: both frames slide by different amounts and in opposite directions, so the tatters have parallax against each other instead of sitting in one plane. A quintic in-out ease ensures the dissolve starts and ends still, hurrying through the middle.
+
+### CORS Requirement & Fallback
+
+Textures require CORS. An image served without the `Access-Control-Allow-Origin` header cannot be uploaded to WebGL at all. If the component detects this, it falls back to a plain DOM cross-fade. The gallery still works completely, but it switches to standard CSS opacity fades. This avoids a black rectangle when shaders are blocked.
