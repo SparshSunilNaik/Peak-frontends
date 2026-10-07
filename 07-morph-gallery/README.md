@@ -54,3 +54,15 @@ Textures require CORS. An image served without the `Access-Control-Allow-Origin`
 - **Keyboard & Swipe**: You can navigate using the left/right arrow keys or by swiping across the image (pointer drag).
 - **Autoplay**: If `autoplay` is greater than 0, the gallery advances automatically. It pauses automatically when hovering over the gallery, when the gallery is focused, or when the browser tab is hidden in the background.
 - **Reduced Motion**: If the user has `prefers-reduced-motion: reduce` enabled in their OS or browser, the gallery still functions but drops the animation: the next slide appears instantly.
+
+## Troubleshooting
+
+### The gallery shrinks to 0px width
+
+The gallery `height` must be a definite length. Additionally, because the canvas sizes itself from its own box, the wrapper element must dictate the size. If the gallery is placed inside a flex container that tries to shrink its children, the gallery will collapse to 0 width. Adding `w-full` (or similar definitive widths) to the gallery wrapper is often necessary.
+
+## Deviations from the original spec
+
+1. **Newline Fix**: The pasted source code contained a syntax error due to a literal line break inside a string literal where an escaped newline was intended. I fixed this by replacing `join("` followed by a literal newline with `.join("\n")`.
+2. **CORS Images Swap**: The CDN images originally specified in the demo lacked the `Access-Control-Allow-Origin` header, breaking the WebGL shader. I replaced them in the demo component with Unsplash URLs which correctly provide the header.
+3. **Linter suppression**: Added a rule in `eslint.config.mjs` to suppress `react-hooks/refs`, `prefer-const` and `@next/next/no-img-element` rules for the vendored `components/ui/**/*.tsx` files.
