@@ -13,6 +13,15 @@ const eslintConfig = defineConfig([
     "build/**",
     "next-env.d.ts",
   ]),
+  // Vendored component files — relax rules without editing the source.
+  {
+    files: ["components/ui/**/*.tsx"],
+    rules: {
+      "react-hooks/refs": "off",
+      "prefer-const": "off",
+      "@next/next/no-img-element": "off",
+    },
+  },
 ]);
 
 export default eslintConfig;
