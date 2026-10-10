@@ -275,3 +275,199 @@
   box-shadow: 0 20px calc(60px * var(--bloom, 1)) -20px rgba(52, 211, 153, 0.35);
   pointer-events: none;
 }
+
+/* Text layers within the pill/card */
+.mo-content {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 20px;
+  box-sizing: border-box;
+  pointer-events: none;
+  user-select: none;
+  z-index: 1;
+}
+
+.mo-content-inner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+}
+
+.mo-label {
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  color: rgba(242, 242, 245, 0.9);
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  opacity: var(--oText, 1);
+}
+
+.mo-label--flash {
+  color: rgba(252, 165, 165, 0.9);
+}
+
+/* Thinking dots */
+.mo-dots {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+  opacity: var(--oDots, 0);
+}
+
+.mo-dots span {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(200, 205, 240, 0.85);
+  animation: mo-dot 1.4s ease-in-out infinite;
+}
+
+.mo-dots span:nth-child(2) { animation-delay: 0.16s; }
+.mo-dots span:nth-child(3) { animation-delay: 0.32s; }
+
+/* Check icon */
+.mo-check {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: rgba(52, 211, 153, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  opacity: var(--oCheck, 0);
+}
+
+.mo-check svg {
+  width: 12px;
+  height: 12px;
+  stroke: #34d399;
+  fill: none;
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* The text card (response) */
+.mo-card-content {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 24px 28px;
+  box-sizing: border-box;
+  opacity: var(--oCardText, 0);
+  pointer-events: none;
+}
+
+.mo-response {
+  font-size: 15px;
+  line-height: 1.65;
+  color: rgba(242, 242, 245, 0.88);
+  overflow-y: auto;
+  max-height: 100%;
+}
+
+/* Shimmer over fresh text */
+.mo-shimmer-text {
+  background: linear-gradient(90deg, rgba(242, 242, 245, 0.88) 0%, rgba(242, 242, 245, 0.88) 40%, rgba(255, 255, 255, 1) 50%, rgba(242, 242, 245, 0.88) 60%, rgba(242, 242, 245, 0.88) 100%);
+  background-size: 250% 100%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: mo-shimmer 2.2s linear 1 forwards;
+}
+
+/* Input row */
+.mo-input-row {
+  position: absolute;
+  left: 50%;
+  bottom: 10%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  width: min(560px, calc(100vw - 32px));
+  z-index: 10;
+  opacity: var(--oInput, 1);
+  pointer-events: var(--peInput, auto);
+  transition: opacity 0.3s;
+}
+
+.mo-input {
+  flex: 1;
+  height: 48px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.06);
+  color: #f2f2f5;
+  font-size: 14px;
+  padding: 0 18px;
+  outline: none;
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  transition: border-color 0.2s;
+  font-family: inherit;
+  box-sizing: border-box;
+}
+
+.mo-input::placeholder {
+  color: rgba(242, 242, 245, 0.35);
+}
+
+.mo-input:focus {
+  border-color: rgba(129, 140, 248, 0.6);
+}
+
+.mo-btn {
+  height: 48px;
+  padding: 0 22px;
+  border-radius: 999px;
+  border: none;
+  background: rgba(99, 102, 241, 0.8);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s;
+  white-space: nowrap;
+  font-family: inherit;
+  flex-shrink: 0;
+}
+
+.mo-btn:hover {
+  background: rgba(99, 102, 241, 1);
+}
+
+.mo-btn:active {
+  transform: scale(0.97);
+}
+
+.mo-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+/* Floating hint */
+.mo-hint {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: calc(10% + 68px);
+  font-size: 12px;
+  color: rgba(242, 242, 245, 0.35);
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 10;
+  opacity: var(--oInput, 1);
+  transition: opacity 0.3s;
+}
