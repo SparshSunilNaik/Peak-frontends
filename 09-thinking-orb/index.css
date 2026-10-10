@@ -88,3 +88,190 @@
     transform: translate(calc(-50% + 4px), -50%);
   }
 }
+
+/* Stage: a full-viewport dark canvas. The mover sits at 46% of the height and the
+   component's script moves it with translate3d, so these two numbers must stay. */
+.mo-root {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  background: #08080b;
+  color: #f2f2f5;
+  font-family: var(--font-sans, ui-sans-serif), system-ui, -apple-system, "Segoe UI", sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+.mo-bg {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(120% 80% at 50% 110%, #15151f 0%, #08080b 60%);
+}
+
+.mo-halo {
+  position: absolute;
+  left: 50%;
+  top: 46%;
+  width: 560px;
+  height: 560px;
+  margin: -280px 0 0 -280px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(120, 130, 255, 0.22), rgba(52, 211, 153, 0.08) 45%, transparent 70%);
+  filter: blur(30px);
+  opacity: var(--oCenter, 0);
+  pointer-events: none;
+}
+
+.mo-mover {
+  position: absolute;
+  left: 50%;
+  top: 46%;
+  width: 0;
+  height: 0;
+  z-index: 2;
+  will-change: transform;
+}
+
+.mo-trail {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, rgba(255, 255, 255, 0.9), rgba(170, 178, 255, 0.4) 60%, transparent 72%);
+  transform: translate(-50%, -50%);
+  opacity: 0;
+  pointer-events: none;
+  will-change: transform, opacity;
+}
+
+/* The actor is the morphing shape. Its size and radius are CSS variables written by the script. */
+.mo-actor {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: var(--w, min(560px, calc(100vw - 32px)));
+  height: var(--h, 60px);
+  transform: translate(-50%, -50%);
+}
+
+.mo-actor[data-shake] {
+  animation: mo-shake 0.26s ease-in-out;
+}
+
+.mo-underglow {
+  position: absolute;
+  left: 8%;
+  right: 8%;
+  bottom: -16px;
+  height: 28px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at center, rgba(129, 140, 248, 0.45), transparent 70%);
+  filter: blur(14px);
+  opacity: var(--oGlow, 1);
+  pointer-events: none;
+}
+
+.mo-halo-green {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: calc(var(--w, 560px) * 2);
+  height: calc(var(--h, 60px) * 2);
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(52, 211, 153, 0.35), transparent 65%);
+  filter: blur(24px);
+  opacity: var(--oHalo, 0);
+  pointer-events: none;
+}
+
+.mo-surface {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--r, 999px);
+  overflow: hidden;
+  opacity: var(--oPill, 1);
+  background: rgba(255, 255, 255, 0.055);
+  -webkit-backdrop-filter: blur(22px) saturate(140%);
+  backdrop-filter: blur(22px) saturate(140%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12), 0 18px 50px -18px rgba(0, 0, 0, 0.7);
+}
+
+.mo-actor[data-flash] .mo-surface {
+  box-shadow: inset 0 0 0 1px rgba(248, 113, 113, 0.8), 0 18px 50px -18px rgba(0, 0, 0, 0.7);
+}
+
+.mo-aurora {
+  position: absolute;
+  inset: 0;
+  opacity: var(--oAur, 1);
+  filter: blur(22px);
+}
+
+.mo-aurora i {
+  position: absolute;
+  top: -40%;
+  width: 46%;
+  height: 180%;
+  border-radius: 50%;
+  animation: mo-drift 7s ease-in-out infinite alternate;
+}
+.mo-aurora i:nth-child(1) { left: -8%; background: rgba(99, 102, 241, 0.35); }
+.mo-aurora i:nth-child(2) { left: 22%; background: rgba(34, 211, 238, 0.28); animation-duration: 9s; animation-delay: -3s; }
+.mo-aurora i:nth-child(3) { left: 48%; background: rgba(99, 102, 241, 0.25); animation-duration: 8s; animation-delay: -5s; }
+.mo-aurora i:nth-child(4) { left: 70%; background: rgba(52, 211, 153, 0.22); animation-duration: 10s; animation-delay: -1s; }
+
+.mo-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--r, 999px);
+  padding: 1px;
+  opacity: var(--oRing, 1);
+  background: conic-gradient(from var(--angle), rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0.08) 40%, rgba(255, 255, 255, 0.08));
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  animation: mo-spin 6s linear infinite;
+  pointer-events: none;
+}
+
+.mo-actor[data-typing] .mo-ring {
+  animation-duration: 2.4s;
+}
+
+.mo-ball {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  opacity: var(--oBall, 0);
+  background: radial-gradient(circle at 35% 30%, #ffffff, #cfd2dc 55%, #8d92a3);
+  box-shadow: 0 0 30px rgba(180, 190, 255, 0.45);
+  pointer-events: none;
+}
+
+.mo-green {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--r, 999px);
+  opacity: var(--oGreen, 0);
+  transform: scale(var(--gs, 0.55));
+  background: radial-gradient(circle at 35% 30%, #6ee7b7, #34d399 55%, #059669);
+  box-shadow: 0 0 40px rgba(52, 211, 153, 0.45);
+  pointer-events: none;
+}
+
+.mo-card {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--r, 20px);
+  opacity: var(--oCard, 0);
+  transform: scale(var(--cs, 1));
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0.04));
+  border: 1px solid rgba(52, 211, 153, 0.35);
+  -webkit-backdrop-filter: blur(18px);
+  backdrop-filter: blur(18px);
+  box-shadow: 0 20px calc(60px * var(--bloom, 1)) -20px rgba(52, 211, 153, 0.35);
+  pointer-events: none;
+}
