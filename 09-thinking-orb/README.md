@@ -79,3 +79,24 @@ idle → listening (user types)
      → done      (response ready)  ← expands to card
      → error     (request failed)  ← red flash, auto-resets
 ```
+
+## Design Notes & Defaults
+
+- **Port**: 3009 (set in `package.json` dev script).
+- **CSS approach**: All orb-specific styles live in `index.css` at the project root (not inside `app/globals.css`) to keep the shadcn theme tokens clean. The component imports it directly with `import "../index.css"`.
+- **Spring physics**: ~20 CSS custom properties are updated each `requestAnimationFrame` tick using a simple spring integrator (stiffness 200, damping 28). This gives the morphing a natural, elastic feel without a heavy animation library.
+- **Verbatim components**: `ai-thinking-orb-and-input.tsx` and `thinking-orb-demo.tsx` are kept exactly as provided. ESLint rules that would flag them are suppressed in `eslint.config.mjs` rather than editing the files.
+- **`"use client"`**: Both component files declare `"use client"` because they use React hooks and browser APIs (`requestAnimationFrame`, `addEventListener`). Metadata lives in `app/layout.tsx` (a Server Component) to avoid the Next.js warning.
+- **Fake backend**: `ThinkingOrbDemo` ships with `fakeBackend()` (a 2-3 s `setTimeout`). Swap it for a real `fetch()` to connect a live LLM.
+
+## Tech Stack
+
+| Layer | Choice |
+|---|---|
+| Framework | Next.js 16 (App Router) |
+| Language | TypeScript 5 |
+| Styling | Tailwind CSS v4 + custom `index.css` |
+| UI primitives | shadcn/ui |
+| Animations | CSS custom properties + `requestAnimationFrame` spring |
+| Font | Geist Sans / Geist Mono (via `next/font`) |
+| Node | >=20 (`.nvmrc` pins 20) |
