@@ -13,6 +13,20 @@ const eslintConfig = defineConfig([
     "build/**",
     "next-env.d.ts",
   ]),
+  // Suppress lint errors in vendored component files that must be kept verbatim.
+  {
+    files: [
+      "components/ai-thinking-orb-and-input.tsx",
+      "components/thinking-orb-demo.tsx",
+    ],
+    rules: {
+      "@typescript-eslint/no-explicit-any": "off",
+      "@typescript-eslint/no-unused-vars": "off",
+      "react-hooks/exhaustive-deps": "off",
+      "@next/next/no-img-element": "off",
+      "no-unused-vars": "off",
+    },
+  },
 ]);
 
 export default eslintConfig;
