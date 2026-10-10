@@ -13,6 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  icons: { icon: "/favicon.svg" },
   title: "AI Thinking Orb",
   description: "A morphing orb UI that signals AI reasoning through motion and shape.",
 };
@@ -27,4 +28,5 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     </html>
   );
 }
+
 
