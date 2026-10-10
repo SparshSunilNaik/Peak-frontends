@@ -28,3 +28,54 @@ Type a prompt in the input field and press **Enter** or click **Send**.
 | Shimmer text | `background-clip: text` shimmer on fresh response text |
 | Input row | Fades out while orb is thinking / in card state |
 | Error state | Red `box-shadow` ring + CSS shake keyframe |
+
+## File Structure
+
+```
+09-thinking-orb/
+├── app/
+│   ├── globals.css          # Tailwind + shadcn tokens + dark base
+│   ├── layout.tsx           # Root layout with metadata
+│   └── page.tsx             # Entry: renders ThinkingOrbDemo
+├── components/
+│   ├── ai-thinking-orb-and-input.tsx  # Core orb + input component (verbatim)
+│   ├── thinking-orb-demo.tsx          # Demo wrapper with fake backend (verbatim)
+│   └── ui/
+│       └── button.tsx       # shadcn Button primitive
+├── lib/
+│   └── utils.ts             # shadcn cn() utility
+├── index.css                # All orb-specific keyframes and class styles
+├── public/
+│   └── favicon.svg          # Orb-shaped SVG icon
+├── .editorconfig
+├── .nvmrc                   # Node 20
+├── components.json          # shadcn config
+├── eslint.config.mjs        # ESLint — vendored files suppressed
+├── next.config.ts
+├── package.json             # dev port 3009, typecheck script, engines >=20
+├── tsconfig.json
+├── PROMPT.md
+└── README.md
+```
+
+## Component API — `AIThinkingOrb`
+
+```tsx
+import AIThinkingOrb, { OrbState } from "@/components/ai-thinking-orb-and-input";
+
+<AIThinkingOrb
+  state="idle"           // OrbState: "idle" | "listening" | "thinking" | "done" | "error"
+  responseText=""        // string shown in the card when state === "done"
+  onPromptSubmit={fn}    // (text: string) => void — called when user submits
+  className=""           // extra class on the root fixed div
+/>
+```
+
+### OrbState transitions
+
+```
+idle → listening (user types)
+     → thinking  (request sent)
+     → done      (response ready)  ← expands to card
+     → error     (request failed)  ← red flash, auto-resets
+```
