@@ -14,6 +14,7 @@ This repository serves as a personal library of frontends. Each frontend lives i
 | 06-scroll-timeline | Scroll Timeline | Next.js, Tailwind, shadcn, gsap | `npm install && npm run dev` | 3006 |
 | 07-morph-gallery | Morph Gallery | Next.js, Tailwind, shadcn | `npm install && npm run dev` | 3007 |
 | 08-crowd-canvas | Crowd Canvas | Next.js, Tailwind, shadcn, gsap | `npm install && npm run dev` | 3008 |
+| 09-thinking-orb | AI Thinking Orb | Next.js, Tailwind, shadcn | `npm install && npm run dev` | 3009 |
 
 ## How to add a new frontend
 
