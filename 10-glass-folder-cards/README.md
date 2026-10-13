@@ -134,3 +134,37 @@ export type ArtRecipe = {
   veins?: number
 }
 ```
+
+---
+
+## Interactions, Accessibility & Motion
+
+### Interaction Model
+- **Hover & Focus Lean**: Hovering or focusing elements within the folder triggers a 3D perspective rotation (`--gf-hinge: -11deg`), lifting internal documents slightly (`--gf-lift: -34px`).
+- **Open Activation**: Clicking the front glass plate or activating via keyboard (`Enter`, `Space`) prompts the front hinge to tilt forward to `-24deg` and fans out the cards across an expressive spread.
+- **Escape Key Handling**: Pressing `Escape` hierarchically dismisses open components:
+  1. If the popup menu is open, it closes the menu and returns focus to the action key.
+  2. If the folder is open, it closes the folder and restores focus to the main folder trigger.
+- **Outside Press**: Pointer clicks outside the folder automatically collapse the open state or context menu.
+- **Top 4 Visible Files**: To preserve realistic physical pocket limits, a maximum of the newest 4 files (`MAX_VISIBLE = 4`) fan out in the active deck stack. Older files remain neatly contained inside.
+- **Anchor Link Rendering**: If a file contains an `href` attribute, it renders as a semantic `<a>` link when open; otherwise, it renders as an accessible `<button>`.
+- **Touch Device Optimization**: Dynamic pointer parallax calculations (`--gf-px`, `--gf-py`) are skipped on touch pointer devices (`pointerType === "touch"`) to prevent unwanted jitter while scrolling.
+
+### Menu Keyboard Navigation
+When the action menu is invoked (`action="more"`):
+- **Focus on Open**: Automatically moves focus to the first item (`[role=menuitem]`).
+- **ArrowDown / ArrowUp**: Cycles focus smoothly down and up through menu options with wrap-around.
+- **Home / End**: Directly jumps focus to the first or last menu item.
+- **Tab**: Closes the open menu and restores normal document tab order navigation.
+
+### Accessibility (a11y)
+- **`aria-expanded`**: Explicitly set on the front glass hit button and context menu trigger button.
+- **Semantic Roles**: Menu containers declare `role="menu"`, while buttons declare `role="menuitem"`. File container declares `role="list"` with children `role="listitem"`.
+- **Inert Closed Files**: When the folder is closed, the files container possesses the HTML `inert` attribute (`filesRef.current?.toggleAttribute("inert", !open)`), removing hidden cards completely from screen reader and keyboard tab sequences.
+- **`aria-live` Omission**: Explicitly avoided on rapid card mutations to prevent noisy speech synthesizer interruptions during multiple card insertions.
+
+### Prefers-Reduced-Motion Behavior
+When the user's operating system requests reduced motion (`@media (prefers-reduced-motion: reduce)`):
+- All transition durations and delays are immediately forced to `0s !important`.
+- Dynamic keyframe bounce animations (`gf-bump`, `gf-drop`, `gf-turn`, `gf-roll`) are suppressed (`animation: none !important`).
+- 3D perspective mouse tilt transformations are disabled (`.gf-tilt { transform: none; }`).
