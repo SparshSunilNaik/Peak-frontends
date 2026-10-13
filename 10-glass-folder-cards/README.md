@@ -203,3 +203,30 @@ The component module exports several low-level mathematical and rendering utilit
 - **`hashString(s: string): number`**: FNV-1a 32-bit hash function converting string labels into deterministic numeric seeds.
 - **`createArtJob(width: number, height: number, recipe: ArtRecipe, seed: number): ArtJob`**: Factory creating an incremental multi-frame art rendering job.
 - **`fanSlot(index: number, count: number): number`**: Computes the relative angle and spread slot `[-1 ... 1]` across the visible card fan.
+
+---
+
+## Troubleshooting
+
+- **Artwork Never Appears**: Canvas generation runs asynchronously across multiple frames on the background queue. It fades in smoothly once finished. If a canvas stays blank, check browser developer tools console for possible canvas 2D context errors or resource constraints.
+- **Styles Look Broken or Missing**: The folder component encapsulates and injects its own stylesheet directly via an inline `<style>` tag (`GF_CSS`). Verify that external HTML sanitizers, CSS-in-JS extractors, or Content Security Policies do not strip or block `<style>` elements.
+- **Folder Appears Tiny or Huge**: The folder stage dimensions scale proportionally according to the `width` prop (default `340px`). Adjust `width` to resize the entire folder and its internal assets proportionally (height scales at `0.96 × width`).
+- **Build Errors Referencing `Uint8ClampedArray`**: The component uses generic typed arrays (`Uint8ClampedArray<ArrayBuffer>`), which requires TypeScript 5.7 or newer. Ensure your environment runs TypeScript >= 5.7 (this repo runs TypeScript 5.9.3).
+
+---
+
+## Deviations from the Original Spec
+
+The vendored component files (`components/ui/glass-folder-cards.tsx` and `components/glass-folder-cards-demo.tsx`) are preserved 100% verbatim with zero modifications. To accommodate Next.js and ESLint 9 flat-config requirements without modifying the vendored code, the following ESLint rules were selectively disabled for `components/ui/glass-folder-cards.tsx` in `eslint.config.mjs`:
+
+1. **`react-hooks/set-state-in-effect`**:
+   - *Error*: `Error: Calling setState synchronously within an effect can trigger cascading renders` (triggered by `setReady(false)` at start of canvas paint effect).
+   - *Resolution*: Rule disabled for the vendored file in `eslint.config.mjs`.
+2. **`react-hooks/refs`**:
+   - *Error*: `Error: Cannot access refs during render` (triggered by reading `ids.current[start + v]` during JSX list mapping).
+   - *Resolution*: Rule disabled for the vendored file in `eslint.config.mjs`.
+3. **`@next/next/no-img-element`**:
+   - *Warning*: `Using <img> could result in slower LCP and higher bandwidth. Consider using <Image /> from next/image...` (triggered by raw `<img>` tags for optional user image inputs).
+   - *Resolution*: Rule disabled for the vendored file in `eslint.config.mjs`.
+
+TypeScript type checking passed cleanly (`tsc --noEmit` exited 0 with TypeScript 5.9.3), so no build-ignore workarounds were needed.
