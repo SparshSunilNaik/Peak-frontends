@@ -168,3 +168,38 @@ When the user's operating system requests reduced motion (`@media (prefers-reduc
 - All transition durations and delays are immediately forced to `0s !important`.
 - Dynamic keyframe bounce animations (`gf-bump`, `gf-drop`, `gf-turn`, `gf-roll`) are suppressed (`animation: none !important`).
 - 3D perspective mouse tilt transformations are disabled (`.gf-tilt { transform: none; }`).
+
+---
+
+## Procedural Generative Artwork
+
+Rather than fetching static raster imagery, Glass Folder Cards paints custom procedural art directly in code using domain-warped fractal Brownian motion (fBm) noise.
+
+### The Five Art Presets (`ART_PRESETS`)
+1. **`aurora`**: A long exposure pulling blush, oxblood, steel, and pale sky blues across a horizontal streak (`style: "streak"`).
+2. **`ember`**: Liquid crimson ink swirling through teal and obsidian depths (`style: "marble"`).
+3. **`dusk`**: Plum, rust, and peach tones swirled with marble folds (`style: "marble"`).
+4. **`glacier`**: Cold, pristine, high-key white and pale ice-blue striations (`style: "streak"`).
+5. **`verdant`**: Forest moss and weathered brass marbling (`style: "marble"`).
+
+### Shading & Domain Warping Algorithm
+- Each recipe computes a 2D domain-warped noise field where coordinates feed through nested fBm evaluations.
+- Catmull-Rom bicubic interpolation samples half-resolution grid points up to full resolution smoothly without blockiness.
+- The scalar field is treated as the height map of a fluid surface. Surface gradients yield normals, producing specular reflections, diffuse lighting, and combed ink striations along contours.
+- The `streak` style stretches coordinates on one axis to create the appearance of long-exposure kinetic motion.
+
+### The Shared Painter Queue
+- Multiple folders on a single screen do not block the UI thread: canvas painting jobs are queued in a shared background scheduler.
+- Each frame, the painter processes up to 7 milliseconds before relinquishing control back to `requestAnimationFrame`.
+- Priority queueing ensures primary back panels (`priority: 0`) render before smaller internal document cards (`priority: 1`).
+- Finished canvas instances are permanently cached by a composite key `[recipe, seed, width, height]`.
+- A file's art seed is deterministically computed from its filename using `hashString(file.name) % 997`, ensuring visual consistency across re-renders.
+
+### Exported Helpers
+The component module exports several low-level mathematical and rendering utilities:
+- **`ART_PRESETS`**: Dictionary of the 5 pre-configured `ArtRecipe` configurations.
+- **`hexToRgb(hex: string): [number, number, number]`**: Converts `#rgb` or `#rrggbb` strings into RGB integer triplets (defaulting to neutral mid-grey on parse error).
+- **`rng(seed: number): () => number`**: Seeded pseudo-random number generator implementing mulberry32.
+- **`hashString(s: string): number`**: FNV-1a 32-bit hash function converting string labels into deterministic numeric seeds.
+- **`createArtJob(width: number, height: number, recipe: ArtRecipe, seed: number): ArtJob`**: Factory creating an incremental multi-frame art rendering job.
+- **`fanSlot(index: number, count: number): number`**: Computes the relative angle and spread slot `[-1 ... 1]` across the visible card fan.
