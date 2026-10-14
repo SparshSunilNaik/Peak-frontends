@@ -16,6 +16,7 @@ This repository serves as a personal library of frontends. Each frontend lives i
 | 08-crowd-canvas | Crowd Canvas | Next.js, Tailwind, shadcn, gsap | `npm install && npm run dev` | 3008 |
 | 09-thinking-orb | AI Thinking Orb | Next.js, Tailwind, shadcn | `npm install && npm run dev` | 3009 |
 | 10-glass-folder-cards | Glass Folder Cards | Next.js, Tailwind, shadcn | `npm install && npm run dev` | 3010 |
+| 11-draggable-widget-grid | Draggable Widget Grid | Next.js, Tailwind, shadcn, motion | `npm install && npm run dev` | 3011 |
 
 ## How to add a new frontend
 
