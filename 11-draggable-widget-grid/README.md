@@ -252,3 +252,42 @@ Container query variants (`@[240px]:`, `@[480px]:`) are built into Tailwind v4 â
 **TypeScript errors after editing vendored files**
 
 Run `npm run typecheck` to see a clean type report. The vendored files are intentionally verbose to mirror the original spec; do not add `any` suppressions unless the eslint override already covers them.
+
+---
+
+## Extending the Grid
+
+### Adding new widgets to the demo
+
+Open `components/draggable-widget-grid-demo.tsx` and append an entry to the `items` array passed to `<DraggableWidgetGrid>`:
+
+```tsx
+{
+  id: "my-widget",
+  title: "My Widget",
+  colSpan: 2,
+  rowSpan: 1,
+  content: (
+    <div className="@container h-full">
+      <p className="text-sm @[240px]:text-base">Hello, widget!</p>
+    </div>
+  ),
+}
+```
+
+Use the `@container` class on the content root to enable container-query responsive breakpoints within the widget body.
+
+### Changing the column count
+
+Pass a different `columns` value to the grid component:
+
+```tsx
+<DraggableWidgetGrid items={items} columns={3} gap={12} />
+```
+
+The packing algorithm automatically adjusts; any widget with `colSpan` greater than `columns` is clamped to `columns`.
+
+### Theming
+
+The grid adopts whatever CSS custom properties are set on `:root`. The shadcn theme tokens in `app/globals.css` (`--background`, `--foreground`, `--card`, `--primary`, etc.) are used throughout the widget cards, so switching between light and dark themes is as simple as toggling a class on `<html>`.
+
