@@ -147,6 +147,32 @@ interface DraggableWidgetGridProps {
 4. **Backtrack** — if the re-packed layout has fewer placed items than before (impossible tiling), revert to the previous order.
 5. **Spring animate** — each widget's `(x, y)` position is driven by `motion`'s `useSpring` for smooth transitions.
 
+#### Animation details
+
+Every widget is rendered with `position: absolute` inside the grid container. The container height is calculated from the tallest occupied row. When items are reordered, each widget animates from its old `(x, y)` to its new `(x, y)` using a spring with:
+
+- `stiffness: 400`
+- `damping: 30`
+
+The dragged item uses `z-index` elevation and a slight `scale(1.04)` transform while held, giving a "picked up" feel.
+
+#### Basic usage
+
+```tsx
+import { DraggableWidgetGrid } from "@/components/ui/draggable-widget-grid";
+
+const items = [
+  { id: "a", title: "Widget A", colSpan: 2, content: <p>Hello</p> },
+  { id: "b", title: "Widget B", colSpan: 1, content: <p>World</p> },
+  { id: "c", title: "Widget C", colSpan: 1, content: <p>!</p> },
+];
+
+export default function Page() {
+  return <DraggableWidgetGrid items={items} columns={4} gap={16} />;
+}
+```
+
+
 ---
 
 ## Demo — AI Agent Observability Dashboard
