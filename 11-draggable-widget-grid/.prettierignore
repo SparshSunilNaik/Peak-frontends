@@ -1,0 +1,3 @@
+# Vendored component files — do not auto-format (they are tab-indented verbatim copies)
+components/ui/draggable-widget-grid.tsx
+components/draggable-widget-grid-demo.tsx
