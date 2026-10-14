@@ -99,6 +99,14 @@ Open [http://localhost:3011](http://localhost:3011) in your browser. The AI Agen
 └── tsconfig.json            # TypeScript config
 ```
 
+> **Config files explained**
+>
+> - **`.editorconfig`** — tells editors to use 2-space indentation everywhere *except* the two vendored component files, which retain their original tab indentation so diffs against the upstream spec stay clean.
+> - **`.nvmrc`** — pins `lts/iron` (Node 20). Run `nvm use` in this directory to automatically switch.
+> - **`.prettierignore`** — prevents Prettier from reformatting the tab-indented vendored files on `format` runs or pre-commit hooks.
+> - **`components.json`** — minimal shadcn config used only to generate `lib/utils.ts` and inject CSS theme tokens; no additional shadcn components were installed.
+
+
 ---
 
 ## Component Architecture
