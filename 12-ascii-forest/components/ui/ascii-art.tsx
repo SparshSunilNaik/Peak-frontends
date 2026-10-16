@@ -28,13 +28,16 @@ export default function AsciiArt({ src, params: paramsProp, className, onReady }
   const imgRef = useRef<HTMLImageElement | null>(null);
   const startTimeRef = useRef<number>(0);
   const rafRef = useRef<number>(0);
-  const paramsRef = useRef<AsciiParams>(FOREST_PRESET);
+  const paramsRef = useRef<AsciiParams>(paramsProp ? mergeParams(paramsProp) : FOREST_PRESET);
   const prevSrcRef = useRef<string>("");
   const mountedRef = useRef(false);
   const lastFrameRef = useRef<number>(0);
 
-  // Merge params
-  paramsRef.current = paramsProp ? mergeParams(paramsProp) : FOREST_PRESET;
+  // Sync params ref cleanly on changes
+  useEffect(() => {
+    paramsRef.current = paramsProp ? mergeParams(paramsProp) : FOREST_PRESET;
+    invalidateSampleCache();
+  }, [paramsProp]);
 
   // ── Draw a single frame ─────────────────────────────────────────────────
 
@@ -111,7 +114,7 @@ export default function AsciiArt({ src, params: paramsProp, className, onReady }
       const snap = document.createElement("canvas");
       snap.width = w;
       snap.height = h;
-      snap.getContext("2d")!.drawImage(canvas, 0, 0);
+      snap.getContext("2d")?.drawImage(canvas, 0, 0);
       applyBlur(ctx, snap, w, h, p);
     }
 
@@ -127,14 +130,6 @@ export default function AsciiArt({ src, params: paramsProp, className, onReady }
     }
   }, []);
 
-  // ── Animation loop ──────────────────────────────────────────────────────
-
-  const loop = useCallback((timestamp: number) => {
-    if (!mountedRef.current) return;
-    drawFrame(timestamp);
-    rafRef.current = requestAnimationFrame(loop);
-  }, [drawFrame]);
-
   // ── Load image + start loop ─────────────────────────────────────────────
 
   useEffect(() => {
@@ -145,9 +140,15 @@ export default function AsciiArt({ src, params: paramsProp, className, onReady }
     const prefersReduced = typeof window !== "undefined" &&
       window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
+    const loop = (timestamp: number) => {
+      if (!mountedRef.current) return;
+      void drawFrame(timestamp);
+      rafRef.current = requestAnimationFrame(loop);
+    };
+
     const loadAndStart = () => {
       if (prefersReduced) {
-        drawFrame(performance.now());
+        void drawFrame(performance.now());
         return;
       }
       // IntersectionObserver: pause off screen
@@ -211,8 +212,7 @@ export default function AsciiArt({ src, params: paramsProp, className, onReady }
       cancelAnimationFrame(rafRef.current);
       cleanup?.();
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [src]);
+  }, [src, drawFrame, onReady]);
 
   // ── ResizeObserver: keep canvas at device pixel ratio ─────────────────
 
@@ -237,12 +237,6 @@ export default function AsciiArt({ src, params: paramsProp, className, onReady }
     ro.observe(canvas);
     return () => ro.disconnect();
   }, []);
-
-  // ── Redraw when params change ──────────────────────────────────────────
-
-  useEffect(() => {
-    invalidateSampleCache();
-  }, [paramsProp]);
 
   return (
     <canvas

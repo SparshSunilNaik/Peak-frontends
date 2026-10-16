@@ -1,6 +1,6 @@
 import type { SampledCell } from "../sample";
 import type { CharSet } from "../types";
-import { charForL, resolveRamp } from "../charsets";
+import { resolveRamp } from "../charsets";
 
 export interface CharModeOptions {
   charSet: CharSet;

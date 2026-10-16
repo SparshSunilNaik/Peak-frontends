@@ -37,8 +37,6 @@ export function renderCells(
     edgeEmphasis,
     invert,
     styleBlend,
-    charSet,
-    customChars,
   } = params;
 
   ctx.save();
