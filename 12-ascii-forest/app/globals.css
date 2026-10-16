@@ -123,6 +123,8 @@
   }
   body {
     @apply bg-background text-foreground;
+    margin: 0;
+    background: #050505;
   }
   html {
     @apply font-sans;
