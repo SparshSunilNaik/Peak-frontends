@@ -135,3 +135,120 @@ Every render mode is implemented as a specialized drawing function in Canvas2D:
 23. **`hatch`**: Fine pencil cross-hatching with primary and secondary crossing diagonal strokes.
 24. **`contour`**: Topographic iso-line segments computed across 7 levels via marching squares.
 25. **`halfblocks`**: Dual vertical sub-cell sampling drawing upper and lower half-blocks.
+
+---
+
+## Render Pipeline Architecture
+
+The rendering pipeline in `components/ui/ascii-art.tsx` executes the following sequence on every frame:
+
+```
+[Source Photo]
+      │
+      ▼
+1. [Backdrop Pass] ────────────► Draw cover photo with optional blur / solid fill
+      │
+      ▼
+2. [Sampling Grid] ────────────► Averaged RGB + Rec.709 Luma + Tone Curve LUT + Sobel edges (Cached)
+      │
+      ▼
+3. [Cell Loop & Anim] ─────────► Density gamma + Edge boost + Invert + Coverage hash + Temporal modulation
+      │
+      ▼
+4. [Shape / Glyph Draw] ───────► Dispatch to active renderMode (characters, blocks, patterns, shapes)
+      │
+      ▼
+5. [Color Adjustments] ────────► Single-pass pixel loop: Brightness, Contrast, Saturation, Grayscale + Tint overlay
+      │
+      ▼
+6. [Blur Pass] ────────────────► Tilt-shift / Gaussian / Directional / Lens / Progressive mask composite
+      │
+      ▼
+7. [Post Effects Stack] ───────► Pixelate ➔ Chromatic ➔ Bloom ➔ Halftone ➔ Scanlines ➔ Grain ➔ Dust ➔ Glitch ➔ Vignette
+      │
+      ▼
+8. [Lights & Mask] ────────────► Point lights glow overlay + Optional photo reveal alpha mask
+      │
+      ▼
+[Final Canvas Output]
+```
+
+### 1. Backdrop Pass
+Draws the original image into the canvas with `object-fit: cover`. Depending on `bgMode`:
+- `"blur"`: Uses `ctx.filter = blur(bgBlur)` with a canvas downscale fallback if unsupported, at `bgOpacity`.
+- `"solid"`: Fills `bgColor` at `bgOpacity`.
+- `"original"`: Draws the unblurred photo at `bgOpacity`.
+- `"none"`: Clears canvas with near-black `#050505`.
+
+### 2. Offscreen Sampling & Edge Detection
+When image dimensions, source, cellSize, or tone curve change, the canvas samples the photo onto an offscreen canvas:
+- Computes average color $(r, g, b)$ per $cellSize \times cellSize$ block.
+- Calculates standard Rec.709 luminance: $Y = 0.2126 r + 0.7152 g + 0.0722 b$.
+- Maps luminance through the 256-entry piecewise-linear tone curve LUT.
+- Runs a 3×3 Sobel filter across cell luminance values to produce normalized edge magnitudes ($0..1$).
+- Caches the entire grid data structure so per-frame loops avoid CPU-heavy pixel reads.
+
+### 3. Cell Loop & Animation
+For each cell index:
+1. Base tone-curved luminance $L$ is fetched.
+2. Density gamma bias is applied: $L = L^{1 - \text{density}/200}$.
+3. Sobel edge magnitude is injected: $L = \text{clamp}(L + \text{edge} \times \text{edgeEmphasis}/100, 0, 1)$.
+4. If `invert` is true, $L = 1 - L$.
+5. Deterministic hash `cellHash(index) % 100 < coverage` determines whether the cell is drawn.
+6. Animation style modulates luminance and character jitter over time.
+7. Active render mode draws into the cell using cell color and effective luminance.
+
+### 4. Color Adjustments Pass
+When non-neutral color values are specified, a single contiguous `getImageData` pixel pass is performed:
+- **Brightness**: adds `brightness * 2.55` to each channel.
+- **Contrast**: computes $F = \frac{259(c + 255)}{255(259 - c)}$ and evaluates $F \times (V - 128) + 128$.
+- **Saturation**: shifts RGB deviation from luminance by factor $1 + s/100$.
+- **Grayscale**: linearly interpolates channels toward Rec.709 luma by `grayscale / 100`.
+- **Tint**: if `tintOpacity > 0`, fills a full rect with `tint` under `overlayBlend`.
+
+### 5. Selective Optical Blur Pass
+Extracts the current frame into an offscreen canvas, applies maximum blur radius `blurAmount`, builds a grayscale alpha mask based on `blurType` (such as the central clear focus band of `"tilt"`), masks the blurred image with `destination-in`, and paints it back over the sharp frame.
+
+### 6. Post Effects Stack
+Post effects run in a deterministic order:
+- `pixelate`: Block-averages pixels via low-res downscaling with `imageSmoothingEnabled = false`.
+- `chromatic`: Displaces red channel left and blue channel right by up to 6px.
+- `bloom`: Composites a blurred duplicate of high-luminance elements via `"screen"`.
+- `halftone`: Evaluates a 45° offset periodic dot screen based on cell luminance.
+- `scanLines`: Renders 1px dark horizontal lines every 3px.
+- `filmGrain`: Blends a pre-generated 256×256 procedural noise tile at random offsets via `"overlay"`.
+- `filmDust`: Seeds random hairline scratches and specks 12 times per second.
+- `glitch`: Shifts 2 to 6 horizontal frame slices during occasional random burst frames.
+- `vignette`: Blends an inverted radial falloff gradient darkening outer edges.
+
+---
+
+## Animation Styles & Formulas
+
+Temporal animation coordinates time $t$ and modulation amplitude $amp$:
+$$t = \text{elapsedSeconds} \times \left(\text{animSpeed.enabled} \ ? \ \frac{\text{animSpeed.intensity}}{100} : 0\right)$$
+$$amp = \text{animIntensity.enabled} \ ? \ \frac{\text{animIntensity.intensity}}{100} : 0$$
+
+- **`shimmer`** (Forest preset default):
+  $$\Delta L = amp \times 0.18 \times \sin(t \times 2.2 + \text{cellHash}(\text{cell}) \times 2\pi)$$
+  For character mode, glyph ramp index randomly jitters by $\pm 1$ step.
+- **`wave`**:
+  $$\Delta L = amp \times 0.25 \times \sin(t \times 2.0 + x \times 0.12 + y \times 0.07)$$
+- **`pulse`**:
+  $$\Delta L = amp \times 0.20 \times \sin(t \times 1.6)$$
+- **`ripple`**:
+  $$\Delta L = amp \times 0.30 \times \sin(t \times 3.0 - \text{distFromCenter} \times 0.15)$$
+- **`flicker`**:
+  Discrete stochastic binary shifts updated 8 times per second with probability $amp \times 0.08$.
+
+---
+
+## Performance Optimizations
+
+1. **Grid Caching**: Photo sampling, luminance calculations, tone LUT mapping, and Sobel edge detection run strictly once per image source and resize. The per-frame animation loop never calls `getImageData` on the raw source image.
+2. **Adaptive Frame Rate Throttling**: When computationally heavy post-processing passes (chromatic aberration, halftone, film grain, or bloom) are enabled, the animation loop caps at **30 FPS**. When simpler modes run, it renders at native **60 FPS**.
+3. **Visibility & Intersection Observer**: Animation frames automatically pause when:
+   - The browser tab is in the background (`document.hidden`).
+   - The canvas element is scrolled out of viewport (`IntersectionObserver`).
+4. **Accessibility (`prefers-reduced-motion`)**: When the user requests reduced motion in system preferences, temporal animation is halted and a crisp single frame is rendered.
+5. **Zero-Allocation Hot Loops**: Cell coordinate calculation, hash lookups, and geometric primitives reuse pre-allocated numbers and static lookup arrays rather than allocating objects inside inner frame loops.
