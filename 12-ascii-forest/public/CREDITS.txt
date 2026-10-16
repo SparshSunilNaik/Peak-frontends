@@ -1,0 +1,7 @@
+Forest photo: Unsplash photo-1448375240586-882707db888b
+Photographer: Jeremy Bishop (@jeremy0)
+License: Unsplash License (https://unsplash.com/license)
+Source URL: https://images.unsplash.com/photo-1448375240586-882707db888b
+
+Usage note: This image is served from the same origin (/forest.jpg) to avoid
+CORS restrictions when reading pixel data with getImageData().
