@@ -184,5 +184,5 @@ function drawCell(
       });
       break;
   }
-  void charSet; void customChars; void grid; // suppress unused
+  void grid; void cells; void cols; void rows;
 }
