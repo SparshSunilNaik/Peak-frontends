@@ -252,3 +252,35 @@ $$amp = \text{animIntensity.enabled} \ ? \ \frac{\text{animIntensity.intensity}}
    - The canvas element is scrolled out of viewport (`IntersectionObserver`).
 4. **Accessibility (`prefers-reduced-motion`)**: When the user requests reduced motion in system preferences, temporal animation is halted and a crisp single frame is rendered.
 5. **Zero-Allocation Hot Loops**: Cell coordinate calculation, hash lookups, and geometric primitives reuse pre-allocated numbers and static lookup arrays rather than allocating objects inside inner frame loops.
+
+---
+
+## Assumptions & Design Decisions
+
+1. **Contrast Formulation**: Contrast is evaluated using the classic $-255..255$ integer contrast formula:
+   $$\text{factor} = \frac{259 \times (c + 255)}{255 \times (259 - c)}$$
+   $$\text{channel}' = \text{factor} \times (\text{channel} - 128) + 128$$
+   In the Forest preset where `contrast: 128`, this produces a strong factor of $\approx 3.01$, creating the harsh, high-contrast monochrome aesthetic requested by the recipe.
+2. **Density and Edge Interpretation**:
+   - `density` ($-100..100$) acts as a gamma bias: $L' = L^{1 - \text{density}/200}$, shifting mid-tones darker or lighter.
+   - `edgeEmphasis` ($0..100$) scales and adds the normalized 3×3 Sobel gradient magnitude directly into cell luminance before glyph mapping.
+3. **Background Color Extension (`bgColor`)**: Added `bgColor: string` to `AsciiParams` defaulting to `"#000000"` to cleanly support the `bgMode: "solid"` backdrop option.
+4. **Mask Editor UI Scope**: In accordance with the prompt specification, interactive freehand drawing brush tools were designated out-of-scope; the reveal mask system fully supports programmatic bitmaps via `mask.dataUrl`, with optional `mask.invert` and `mask.showOverlay` preview tinting.
+5. **Photo Source**: Successfully retrieved a verified high-resolution forest photo from Unsplash (`photo-1448375240586-882707db888b`, 475 KB JPEG) and bundled it locally into `public/forest.jpg`. The implementation did **not** need to fall back to procedural generation.
+6. **`ctx.filter` Fallback**: On browsers or environments lacking native Canvas2D `ctx.filter` support (such as older WebKit/Safari engines), the background and blur passes fall back to multi-step downscale and upscale box sampling.
+
+---
+
+## Troubleshooting
+
+- **Blank Canvas**: Indicates that the image source failed to load or was blocked by browser CORS security policies. Using the bundled local asset `/forest.jpg` or an uploaded file through `URL.createObjectURL` guarantees same-origin access for `getImageData`.
+- **Harsh, Ultra-High Contrast Output**: This is intentional. The Forest preset specifies `contrast: 128` under the $-255..255$ integer scale, producing a stark black-and-white tonal thresholding typical of 21st.dev's Forest look.
+- **High CPU or GPU Utilization**: Decrease the canvas viewport resolution or increase `cellSize` (e.g., from `10` to `16` or `20`). Disabling heavy post-effects such as `chromatic` or `halftone` reduces frame computation overhead.
+- **Blurring Inactive on Safari**: Older versions of Safari lack `ctx.filter`. The built-in downscale fallback maintains visual softening even when native CSS filter acceleration is absent.
+
+---
+
+## Credits & License
+
+- **Visual Concept & Recipe**: Reimplemented from the public recipe of the **"Forest"** ASCII-art effect from [21st.dev](https://21st.dev). All Canvas2D shader, sampling, animation, and React code was built from scratch without copying proprietary source code.
+- **Forest Source Photo**: Photo by [Jeremy Bishop](https://unsplash.com/@jeremy0) on [Unsplash](https://unsplash.com/photos/green-trees-in-forest-during-daytime-1448375240586-882707db888b), distributed under the [Unsplash License](https://unsplash.com/license).
