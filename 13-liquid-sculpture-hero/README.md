@@ -164,3 +164,62 @@ export interface SculptureHeroLink {
 - **Reduced Motion Support**: If `prefers-reduced-motion` is detected, cursor force and turbulence are halved, ambient drift is disabled, and intro animations are bypassed.
 - **Touch Support**: Mobile and tablet interactions utilize touch press-and-drag with a 260ms release decay for natural tactile feedback.
 - **Graceful WebGL2 Fallback**: If WebGL2, floating-point render targets, or CORS image pixel access fail, the underlying `<img>` fallback remains visible, ensuring the page remains visually intact. If a WebGL context loss occurs, the component automatically falls back to the static image.
+
+---
+
+## Images & CORS
+
+The component's default props load four sculpture images from `cdn.21st.dev`:
+1. `src` (Desktop Light): `https://cdn.21st.dev/assets/mirror/ae/ae8c3de9003460e59182e950ccd345f68f27f9d0e4808b64c92c962a4eca7120.webp`
+2. `darkSrc` (Desktop Dark): `https://cdn.21st.dev/assets/mirror/a1/a1fa387b6e417b26a25f317559c87cce4d241c1052c52a2b3bc2966b2aaf9b65.webp`
+3. `mobileSrc` (Mobile Light): `https://cdn.21st.dev/assets/mirror/b0/b0c8d8e5d64b8cec906a3b390e3dc7c9a5af08334bf0632873c601782cb4bc46.webp`
+4. `mobileDarkSrc` (Mobile Dark): `https://cdn.21st.dev/assets/mirror/9a/9a82cb59be1bfde59855b79d7a565e487155a89f4d52eac74dcc10e267b2b6d1.webp`
+
+### CORS Verification Results
+All four remote assets were verified via preflight curl requests with origin headers (`curl -sI -H "Origin: http://localhost:3013" <url>`):
+- **HTTP Status**: `200 OK` across all four endpoints
+- **Content-Type**: `image/webp`
+- **Access-Control-Allow-Origin**: `*` present on all four responses
+
+Because all four CDN images returned proper permissive CORS headers, the project uses the default CDN images directly at runtime without requiring local asset duplication.
+
+### Background Keying Rule
+- If the image contains transparency (cut-out PNG/WebP), material is segmented directly using alpha thresholds ($A > 0.12$).
+- If the image has an opaque background, the engine samples its 4 outer corners to detect the flat backdrop color and keys out background pixels whose Euclidean RGB distance is $< 0.03$. For custom images, pass `imageBackground="#HEX"` to guarantee clean boundary segmentation.
+
+---
+
+## Troubleshooting
+
+- **Static image shown without particle effect**:
+  - The browser or GPU environment does not support WebGL2 or floating-point render targets (`EXT_color_buffer_float` / `EXT_color_buffer_half_float`). The component automatically leaves the static `<img>` visible as a graceful fallback.
+  - Remote image was blocked by CORS policy, preventing `ctx.getImageData()` from sampling pixels.
+- **Sculpture looks tinted or exhibits a dark perimeter halo**:
+  - The source image has a flat opaque background whose color differs slightly from the corners. Pass `imageBackground="#HEX"` matching the image backdrop color.
+- **Page is blank at the top during load**:
+  - Web fonts (`Geist`, `Instrument Serif`) or the remote image are loading across the network. Check browser network activity.
+- **High GPU utilization or fan speed**:
+  - Lower `particleDensity` (e.g. from `1` to `0.6`), increase `dotSize` slightly, or reduce window size.
+
+---
+
+## Deviations from the Original Spec
+
+1. **Newline-Escape Syntax Fixes in `liquid-sculpture-hero.tsx`**:
+   - In `DEFAULTS`: The broken literal newline `headline: "Form that\nanswers back.",` was formatted onto a single line with an escaped `\n` sequence.
+   - In `function renderHeadline`: The broken split `const lines = text.split("\n")` was formatted onto a single line with an escaped `\n` sequence.
+   - *Reason*: The original specification paste had raw unescaped line breaks inside double quotes, which caused fatal JavaScript syntax errors.
+2. **ESLint Rule Adjustments in `eslint.config.mjs`**:
+   - `react-hooks/refs`: Turned off for vendored files because the component intentionally writes to `layout.current` and `optsRef.current` during render to avoid stale prop closures in pointer listeners.
+   - `react-hooks/set-state-in-effect`: Turned off for vendored files because `React.useEffect(() => setMode(theme), [theme])` explicitly synchronizes external theme prop changes with internal state.
+   - `@next/next/no-img-element`: Turned off for vendored files because the component uses a raw `<img crossOrigin="anonymous" />` element inside `<div className="sh-stage">` as an unpresented WebGL pixel fallback.
+3. **App Router Layout Prop Typing in `app/layout.tsx`**:
+   - Replaced Next.js scaffold template type `LayoutProps<"/">` with standard React `Readonly<{ children: React.ReactNode }>`.
+
+---
+
+## Credits & License
+
+- **Component & Animation Engine**: Created by [Guglielmo Giannattasio](https://guglielmogiannattasio.it), released on [21st.dev](https://21st.dev).
+- **Default Fonts**: `Geist` (SIL Open Font License) and `Instrument Serif` (SIL Open Font License), loaded via Google Fonts with offline system font fallbacks.
+- **Sculpture Artwork**: 3D sculpture renders served from `cdn.21st.dev` mirror assets.
