@@ -119,3 +119,48 @@ export interface SculptureHeroLink {
 | | `ambientIntensity` | `number` | `1` (`0` to `2`) | Intensity of background drift motion. |
 | | `speed` | `number` | `1` (`0.25` to `3`) | Time progression speed multiplier. |
 | | `intro` | `boolean` | `false` | Plays assembly animation on initial component mount. |
+
+---
+
+## How It Works
+
+### 1. Particle Sampling & Grid Construction
+- When an image loads, it is rendered into an offscreen 2D canvas at a grid resolution of $640$ (low power) or $1000$ (standard), scaled by $\sqrt{\text{particleDensity}}$.
+- **Cut-out vs. Flat-background Detection**: The engine inspects pixel alpha values. If transparent pixels are abundant, alpha-thresholding identifies material. Otherwise, it samples the 4 image corners to determine the flat background color $\mathbf{c}_{\text{bg}}$ and keys material by color distance $|\mathbf{c} - \mathbf{c}_{\text{bg}}| > 0.03$.
+- Each material pixel generates a particle with a normalized home coordinate $(x, y)$, depth jitter, and sampled RGB color, packed into floating-point textures (`uHome`, `uCol`).
+
+### 2. GPGPU Simulation Loop
+- Particle dynamic state is stored in ping-pong half-float framebuffers (`RGBA16F`) containing:
+  - $(x, y)$: offset in CSS pixels from home
+  - $(z, w)$: velocity vector $(v_x, v_y)$
+- On each frame, `SIM_FS` executes a fragment shader over the state texture evaluating:
+  - **Direct Cursor Repulsion**: An exponential radial push $\mathbf{n} \cdot e^{-r^2 / R^2} \cdot \text{strength}$.
+  - **Rotational Swirl**: Orthogonal force $(-n_y, n_x)$ rotating material around the pointer.
+  - **Fluid Wake Coupling**: Advection velocity sampled from the flow map texture.
+  - **Curl Noise Turbulence**: Procedural 2D curl noise adding organic vortex filaments.
+  - **Elastic Return Spring**: An elastic restoring force $-\mathbf{x} \cdot k$ snapping particles back home.
+
+### 3. Cursor Flow Map
+- A dedicated low-resolution ping-pong texture ($256 \times 104$, `FLOW_FS`) tracks the cursor's velocity and wake energy.
+- The wake diffuses across neighbor texels and decays with a damping factor of $0.968^{\Delta t}$, producing persistent fluid currents behind cursor strokes.
+
+### 4. Seamless Image & Particle Cross-Fade
+- **Shared Energy Function**: Both the image shader (`IMAGE_FS`) and particle shader (`PART_VS`) compute the identical energy metric:
+  $$\text{energyAt}(\mathbf{p}) = \text{smoothstep}\left(0.06, 0.5, 1.15 \cdot e^{-d^2/R^2} \cdot \text{presence} + 1.7 \cdot \text{wakeEnergy}\right)$$
+- The crisp image pass lenses slightly under cursor displacement and fades out where energy is high:
+  $$\text{imageAlpha} = 1.0 - \max(E, \text{restStyle})$$
+- The instanced quad particle pass fades in with the exact complement:
+  $$\text{particleAlpha} = \max(E, \text{lift}, \text{restStyle})$$
+- This complementary transition guarantees zero visual seam or pop during the phase change between solid sculpture and liquid particles.
+
+### 5. Velocity Streaks & Glint Shading
+- Fast-moving particles stretch into capsules oriented along their velocity vector up to a maximum length of 18px.
+- Glint highlights catch the virtual light when velocity exceeds threshold speeds, evoking liquid mercury.
+
+### 6. Performance, Power & Accessibility
+- **Quiescent Sleep**: When interaction ceases and particles settle (within 270 simulated frames), the animation loop halts completely unless `ambient` motion is enabled.
+- **Intersection & Visibility Observers**: The render loop pauses when the hero is scrolled out of viewport or when the browser tab is hidden.
+- **Low-Power Device Adaptation**: Devices with coarse pointers, $\le 4$ CPU cores, or $\le 4\text{ GB}$ RAM automatically downscale the particle grid ($640$ base) and clamp device pixel ratio to $1.5$.
+- **Reduced Motion Support**: If `prefers-reduced-motion` is detected, cursor force and turbulence are halved, ambient drift is disabled, and intro animations are bypassed.
+- **Touch Support**: Mobile and tablet interactions utilize touch press-and-drag with a 260ms release decay for natural tactile feedback.
+- **Graceful WebGL2 Fallback**: If WebGL2, floating-point render targets, or CORS image pixel access fail, the underlying `<img>` fallback remains visible, ensuring the page remains visually intact. If a WebGL context loss occurs, the component automatically falls back to the static image.
