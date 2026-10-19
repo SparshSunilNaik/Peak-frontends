@@ -1,36 +1,52 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 13-liquid-sculpture-hero
+
+An interactive WebGL2 hero section featuring a sculpture reconstructed from ~100k GPU-simulated particles sampled directly from image pixels. The cursor turns the material liquid; as interaction eases, it seamlessly settles back into a crisp high-resolution image. If WebGL2 or floating-point render targets are unavailable, a static fallback image is displayed gracefully.
+
+---
+
+## Why `components/ui` Matters
+
+In projects following the shadcn/ui architecture and modern Next.js conventions, `components/ui` represents the designated home for primitive, headless, or reusable design system elements (such as `button.tsx` or `liquid-sculpture-hero.tsx`):
+1. **Clean separation of concerns**: Visual primitives and rendering engines are decoupled from high-level page layouts, demo compositions, or route logic.
+2. **Standard import path**: Standardizing on `@/components/ui/*` allows teams and component registries to drop in components without path conflicts.
+3. **Composability and Reusability**: The `<SculptureHero />` component can be imported into any route or layout across the application with customizable props.
+
+---
+
+## Features
+
+- **GPGPU Fluid Simulation**: ~100k particles driven by a custom WebGL2 fragment shader evaluating cursor repulsion, rotational swirl, curl-noise turbulence, and elastic return springs.
+- **Dynamic Liquid Wake**: A low-resolution flow map texture captures cursor motion and velocity, leaving a fluid disturbance trail that dissipates over time.
+- **Complementary Cross-Fade**: Energy calculations balance the sharp sculpture image pass with the particle pass, ensuring a seamless cross-fade where material liquefies and solidifies without opacity pops.
+- **Velocity Streaks & Specular Glint**: Accelerating particles stretch along their velocity vector into comet-like capsules with liquid metal specular glints.
+- **Built-in Navigation**: Responsive header containing brand identity (`Forma®`), anchor links (`Work`, `Studio`, `Approach`, `Journal`), a light/dark mode switch, and an action button (`Contact`).
+- **Typography & Hero Content**: Large-format headline with an italic serif accent phrase, supporting descriptive body copy, primary pill button (`Start a project`), and underline secondary link (`Selected work`).
+- **Giant Faint Backdrop Word**: Subtle background watermark text (`forma`) responsive to viewport scaling.
+- **Adaptive Performance**: Sleeps when quiescent, throttles on low-power devices (4 or fewer cores, coarse touch pointers, <= 4GB RAM), and respects `prefers-reduced-motion`.
+
+---
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+- Node.js `>= 20.0.0` (see `.nvmrc`)
+- npm
 
+### Installation
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+cd 13-liquid-sculpture-hero
+npm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Running the Development Server
+```bash
+npm run dev
+```
+Open [http://localhost:3013](http://localhost:3013) with your browser.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### Quality Scripts
+```bash
+npm run lint       # Run ESLint validation
+npm run typecheck  # Run TypeScript type-checking without emitting files
+npm run build      # Build the production Next.js application
+```
