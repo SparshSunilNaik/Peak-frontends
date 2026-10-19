@@ -13,6 +13,18 @@ const eslintConfig = defineConfig([
     "build/**",
     "next-env.d.ts",
   ]),
+  // Vendored files – relax rules that conflict with the verbatim source style.
+  {
+    files: [
+      "components/ui/liquid-sculpture-hero.tsx",
+      "components/liquid-sculpture-hero-demo.tsx",
+    ],
+    rules: {
+      "react-hooks/refs": "off",
+      "react-hooks/set-state-in-effect": "off",
+      "@next/next/no-img-element": "off",
+    },
+  },
 ]);
 
 export default eslintConfig;
