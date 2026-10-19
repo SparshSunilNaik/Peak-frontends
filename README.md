@@ -18,6 +18,7 @@ This repository serves as a personal library of frontends. Each frontend lives i
 | 10-glass-folder-cards | Glass Folder Cards | Next.js, Tailwind, shadcn | `npm install && npm run dev` | 3010 |
 | 11-draggable-widget-grid | Draggable Widget Grid | Next.js, Tailwind, shadcn, motion | `npm install && npm run dev` | 3011 |
 | 12-ascii-forest | Forest ASCII Art | Next.js, Tailwind, shadcn | `npm install && npm run dev` | 3012 |
+| 13-liquid-sculpture-hero | Liquid Sculpture Hero | Next.js, Tailwind, shadcn | `npm install && npm run dev` | 3013 |
 
 ## How to add a new frontend
 
