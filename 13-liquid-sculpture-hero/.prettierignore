@@ -1,0 +1,3 @@
+# Vendored component files — do not auto-format (they are verbatim copies from spec)
+components/ui/liquid-sculpture-hero.tsx
+components/liquid-sculpture-hero-demo.tsx
