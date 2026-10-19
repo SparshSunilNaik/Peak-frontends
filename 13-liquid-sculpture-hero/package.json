@@ -2,6 +2,9 @@
   "name": "13-liquid-sculpture-hero",
   "version": "0.1.0",
   "private": true,
+  "engines": {
+    "node": ">=20.0.0"
+  },
   "scripts": {
     "dev": "next dev -p 3013",
     "build": "next build",
