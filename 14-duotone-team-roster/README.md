@@ -131,3 +131,50 @@ npm run dev          # http://localhost:3014
 | `roleLink` | `"See the role"` |
 | `memberLink` | `"Say hello"` |
 
+
+## How it works
+
+### Tritone SVG filter
+
+The tritone is an `<feColorMatrix>` that converts the image to luminance, followed by an `<feComponentTransfer>` S-curve for contrast, then a second `<feComponentTransfer>` with per-channel `feFuncR/G/B` tables that map the luminance range to shadow, midtone, and highlight hex colours from the active palette. This filter ID is unique per instance (using `React.useId()`) so multiple rosters can coexist on a page. An unfiltered copy of each portrait fades in when the card is active, giving the "colour bleeds back" effect.
+
+### Drifting columns
+
+Portraits are dealt round-robin into columns (`dealColumns`) and padded with hidden repeats so each column's total height is at least `minPerColumn` cards — enough that a full scroll through the loop never reveals a gap. Odd columns drift upward (`dtr-up` keyframe) and even columns drift downward (`dtr-down` keyframe) at staggered phase offsets (`phases = [0, 0.38, 0.71, 0.18]`), so they never look synchronised.
+
+Drift automatically pauses when:
+- the mouse hovers over the wall or a card has keyboard focus (CSS `focus-within`)
+- a card is open (`data-active` attribute on the root)
+- the section is scrolled out of view (`IntersectionObserver` ? `data-offscreen`)
+- the browser tab is hidden (`visibilitychange` ? `data-offscreen`)
+- the user clicks the Pause button (`data-paused`)
+
+### Responsive layouts
+
+| Viewport width | Layout |
+|---|---|
+| < 700 px | Phone strip — one horizontal drifting row above the headline |
+| 700–1000 px | Two drifting columns |
+| > 1000 px | `columns` prop (2–4) |
+
+`layoutFor()` calculates the layout from the container width via a `ResizeObserver`.
+
+### Unfolding card
+
+Each card's panel starts hidden with `clip-path: inset(top right bottom left round 3px)` where `top` is `calc(100% - 26px)` (the chip height). On open the clip-path animates to `inset(0 0 0 0)`, revealing the full name/role/bio/link panel from the chip's corner.
+
+### Title fitting
+
+`fitTitleSize()` reads the actual rendered width of the widest headline line at the current font size, then calculates the font size that would make it exactly fill the available copy column width (with a 1.18× overhang factor that lets the headline run into the first portrait column, poster-style).
+
+### Static / non-drift mode
+
+With `drift={false}` or `driftSeconds <= 0`, the wall becomes a static grid. The copy column becomes `position: sticky` so the headline stays pinned while the photo wall scrolls beside it.
+
+### Reduced motion
+
+`@media (prefers-reduced-motion: reduce)` removes all `animation` and drops `transition-duration` to 1 ms. Columns are kept staggered and still (using `--dtr-rest` to set a fixed translate), and the Pause button is hidden since there is nothing to pause.
+
+### Browser requirements
+
+The component uses `container-type: inline-size`, `color-mix(in srgb, …)`, `CSS translate`, `100svh`, and the SVG filter stack. It needs a current evergreen browser (Chrome 105+, Firefox 110+, Safari 16+).
