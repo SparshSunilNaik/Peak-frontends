@@ -43,3 +43,91 @@ npm run dev          # http://localhost:3014
 - **TypeScript 5**
 - **Tailwind CSS v4** (utility classes on wrapper elements only — the roster component ships its own embedded CSS)
 - **shadcn** (provides `components.json`, `lib/utils.ts`, and the `@/components/ui` convention)
+
+## Props
+
+### `DuotoneTeamRosterProps`
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `members` | `TeamMember[]` | `DEFAULT_MEMBERS` | The ten people to display. |
+| `openRoles` | `OpenRole[]` | `[]` | Empty frames placed among portraits, each linking to a job. |
+| `eyebrow` | `string` | `"Meet"` | Small display word above the headline. |
+| `title` | `string` | `"The\ncrew"` | Headline; use `\n` to break lines — each line is fitted to the column width. |
+| `intro` | `string` | *(studio blurb)* | Paragraph below the headline. |
+| `cta` | `RosterLink \| null` | `{ label: "Start a project", href: "#contact" }` | Primary CTA link. |
+| `secondaryCta` | `RosterLink \| null` | `null` | Secondary text link in the actions row. |
+| `preset` | `"ember" \| "cobalt" \| "moss" \| "mono"` | `"ember"` | Built-in colour preset. |
+| `palette` | `RosterPaletteInput` | — | Overrides any colour of the preset. |
+| `columns` | `number` | `3` | Portrait columns on wide screens (2 to 4). Tablets get 2; phones get a strip. |
+| `driftSeconds` | `number` | `9` | Seconds a column takes to drift past one portrait height. Lower = faster. |
+| `drift` | `boolean` | `true` | `false` (or `driftSeconds <= 0`) gives a static wall that scrolls with the page. |
+| `height` | `string` | `"100svh"` | Section height on tablet and desktop. Must be a definite length, never a percentage. |
+| `fontFamily` | `string` | Arial Black / Archivo Black / Helvetica Neue stack | Display face for the headline, eyebrow, and monograms. |
+| `stretch` | `number` | `1.16` | Horizontal `scaleX` of the display face (1 = as drawn). |
+| `uppercase` | `boolean` | `true` | Transforms the headline to uppercase. |
+| `grain` | `boolean` | `true` | Adds a subtle film-grain overlay via SVG noise. |
+| `labels` | `RosterLabelsInput` | See below | Overrides built-in strings for translation. |
+| `className` | `string` | `""` | Extra class on the root `<section>`. |
+| `onMemberSelect` | `(member: TeamMember) => void` | — | Called when a portrait is clicked or opened with the keyboard. |
+| `clickFollowsLink` | `boolean` | `true` | Whether a mouse click on a portrait follows its `href` (never a `mailto:`, which stays on the "Say hello" link). |
+
+### `TeamMember`
+
+| Field | Type | Notes |
+|---|---|---|
+| `name` | `string` | Full name, used for the accessible button label and monogram. |
+| `role` | `string` | Job title. |
+| `craft` | `string?` | Short chip label ("Colour", "Sound"). Defaults to `role`. |
+| `bio` | `string?` | One line shown in the unfolded card. |
+| `photo` | `string?` | Portrait URL. Falls back to a monogram plate when missing or broken. |
+| `focus` | `string?` | CSS `object-position` for the portrait, e.g. `"50% 30%"`. |
+| `href` | `string?` | Link in the unfolded card (usually a `mailto:`). |
+| `linkLabel` | `string?` | Link text. Defaults to `labels.memberLink` ("Say hello"). |
+| `exposure` | `number?` | Brightens (`> 1`) or darkens (`< 1`) the portrait before the tritone filter. |
+
+### `OpenRole`
+
+| Field | Type | Notes |
+|---|---|---|
+| `title` | `string` | Role title shown in the unfolded card. |
+| `href` | `string` | Link to the job posting. |
+| `craft` | `string?` | Chip label. Defaults to `labels.hiring` ("Hiring"). |
+| `note` | `string?` | One line under the title in the unfolded card. |
+| `mark` | `string?` | Large word inside the empty frame. Defaults to `"You?"`. |
+| `linkLabel` | `string?` | Link text. Defaults to `labels.roleLink` ("See the role"). |
+
+### `RosterPalette`
+
+| Token | Role |
+|---|---|
+| `ground` | Darkest colour: field edges and chip backgrounds. |
+| `deep` | Field between ground and glow. |
+| `hot` | Hot centre of the field and tritone midtone. |
+| `glow` | Brightest light in the field. |
+| `ink` | Headline, chip text, and CTA fill. |
+| `shadow` | Tritone shadow colour applied to every portrait. |
+| `highlight` | Tritone highlight colour applied to every portrait. |
+| `mid` | Tritone midtone. Defaults to a paler mix of `hot` and `highlight`. |
+
+#### Built-in presets
+
+| Preset | Ground | Hot | Glow | Ink |
+|---|---|---|---|---|
+| `ember` | `#170403` | `#ee7a1c` | `#ffb54a` | `#fff0c8` |
+| `cobalt` | `#03061f` | `#2e57f5` | `#86a6ff` | `#eef1ff` |
+| `moss` | `#061008` | `#5d8a35` | `#c3d66e` | `#f3f6dd` |
+| `mono` | `#090909` | `#8c8c8c` | `#e0e0e0` | `#fafafa` |
+
+### `RosterLabels` (all built-in strings)
+
+| Key | Default |
+|---|---|
+| `pause` | `"Pause"` |
+| `play` | `"Play"` |
+| `team` | `"Team"` (accessible name of the portrait wall) |
+| `openRole` | `"Open role"` (prefix read before an open role's title by screen readers) |
+| `hiring` | `"Hiring"` (default chip on open-role frames) |
+| `roleLink` | `"See the role"` |
+| `memberLink` | `"Say hello"` |
+
