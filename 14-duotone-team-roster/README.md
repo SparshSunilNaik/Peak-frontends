@@ -178,3 +178,113 @@ With `drift={false}` or `driftSeconds <= 0`, the wall becomes a static grid. The
 ### Browser requirements
 
 The component uses `container-type: inline-size`, `color-mix(in srgb, …)`, `CSS translate`, `100svh`, and the SVG filter stack. It needs a current evergreen browser (Chrome 105+, Firefox 110+, Safari 16+).
+
+## Photos
+
+Default portraits are hotlinked Unsplash images of the form:
+
+```
+https://images.unsplash.com/photo-<id>?auto=format&fit=crop&w=720&h=960&q=80
+```
+
+They are plain `<img>` tags (no `crossOrigin`), so no CORS check is needed. The ten default IDs are:
+
+| Member | Unsplash photo ID |
+|---|---|
+| Priya Nair | `1494790108377-be9c29b29330` |
+| Daniel Osei | `1507003211169-0a1dd7228f2d` |
+| Ellie Marsh | `1438761681033-6461ffad8d80` |
+| Marcus Bell | `1500648767791-00dcc994a43e` |
+| Hannah Cole | `1544005313-94ddf0286df2` |
+| Graham Whitlock | `1472099645785-5658abf4ff4e` |
+| Mira Kowalczyk | `1517841905240-472988babdf9` |
+| Jules Okafor | `1506794778202-cad84cf45f1d` |
+| Sam Lindqvist | `1502823403499-6ccfcf4fb453` |
+| Noa Brandt | `1524504388940-b1c1722653e1` |
+
+**Photo verification:** Outbound HTTP requests to Unsplash from this build environment timed out after multiple attempts (both HEAD and GET with a 15-second timeout), so per-URL HTTP 200 confirmation could not be obtained at build time. The IDs are the same well-known Unsplash portrait photos used in similar 21st.dev components. If any portrait fails to load in the browser, the component automatically displays a monogram plate (member initials) — this is the designed fallback behaviour and is fully accessible.
+
+To override a portrait without editing the vendored component, pass custom members via props in `app/page.tsx`:
+
+```tsx
+import DuotoneTeamRoster, { DEFAULT_MEMBERS } from "@/components/ui/duotone-team-roster";
+const PHOTO_FIXES: Record<string, string> = {
+  "Member Name": "https://images.unsplash.com/photo-<verified-id>?auto=format&fit=crop&w=720&h=960&q=80",
+};
+const members = DEFAULT_MEMBERS.map((m) =>
+  PHOTO_FIXES[m.name] ? { ...m, photo: PHOTO_FIXES[m.name] } : m,
+);
+export default function Home() {
+  return <DuotoneTeamRoster members={members} />;
+}
+```
+
+## Accessibility
+
+- Each portrait is a `<button>` with `aria-label="<Name>, <Role>"`, `aria-expanded`, and `aria-controls` pointing to its panel.
+- **Keyboard flow:** Tab to a portrait ? Enter opens the card ? second Enter moves focus to the link inside ? Escape folds the card and returns focus to the button.
+- **Touch:** a tap toggles the card open/closed. Tapping outside an open card closes it.
+- **Mouse:** hover opens the card; clicking follows the member's `href` (unless it is a `mailto:`, which stays on the "Say hello" link inside the panel).
+- The headline `<h2>` is the section's accessible name via `aria-labelledby`.
+- Duplicate loop items (padding repeats) are `aria-hidden="true"` and `tabIndex={-1}`.
+- The portrait wall has `role="group"` with `aria-label={labels.team}`.
+
+## Troubleshooting
+
+| Symptom | Likely cause | Fix |
+|---|---|---|
+| Portraits show monogram initials | Photo URL returned non-200 or failed to load | Pass overridden `members` with verified Unsplash IDs via `app/page.tsx` (see Photos section) |
+| Layout looks too short / portrait wall clips | `height` is set to a percentage | Use a definite CSS length (`100svh`, `800px`, etc.) |
+| Headline text too wide or too narrow | `stretch` is off for the chosen font | Tune `stretch` prop (default 1.16) |
+| Very dark or very bright portrait | Photo exposure is off | Set `exposure` on that `TeamMember` (e.g. `1.3` to brighten) |
+| Drift doesn't pause on hover | `pointer: coarse` device (touch screen) | Hover pause is intentionally disabled on touch; use the Pause button |
+| Build error: `tw-animate-css` not found | shadcn dependency missing | Run `npm install` |
+
+## Exported helpers
+
+The following are exported from `components/ui/duotone-team-roster.tsx` for external use:
+
+| Export | Type | Purpose |
+|---|---|---|
+| `PRESETS` | `Record<RosterPreset, RosterPalette>` | All four built-in palettes. |
+| `DEFAULT_LABELS` | `RosterLabels` | All built-in strings. |
+| `DEFAULT_MEMBERS` | `TeamMember[]` | The ten default studio members. |
+| `resolvePalette` | `(preset, overrides) => RosterPalette` | Merges a preset with partial overrides. |
+| `hexToUnit` | `(hex) => number[]` | Converts a hex colour to `[r, g, b]` in 0–1 range. |
+| `mixHex` | `(a, b, t) => string` | Linearly interpolates between two hex colours. |
+| `tritoneTables` | `(shadow, mid, highlight) => string[]` | Generates per-channel SVG filter table values. |
+| `initials` | `(name) => string` | Extracts the first and last initials from a full name. |
+| `dealColumns` | `(count, roleCount, columns, minPerColumn) => any[][]` | Deals members into columns with padding. |
+| `fitTitleSize` | `(available, widestAt100, stretch, min, max) => number` | Calculates the font size to fill a given width. |
+| `layoutFor` | `(width, columns) => number` | Returns column count (0 = strip) for a container width. |
+| `splitLines` | `(title) => string[]` | Splits a `\n`-separated title into an array of trimmed lines. |
+
+## Assumptions
+
+- The `components/ui/` folder path is required because shadcn resolves `@/components/ui` from `components.json`. The roster component is placed there so that shadcn's convention holds even though no shadcn primitives are used inside the component itself.
+- Port 3014 was chosen as the next available port after `13-liquid-sculpture-hero` (3013).
+- `drift={true}` and `driftSeconds={9}` (the defaults) are kept for the demo; the design is most legible at this speed.
+
+## Deviations from the original spec
+
+### 1. Two permitted newline-escape fixes (in `splitLines` and `DuotoneTeamRoster` default title)
+
+The pasted source had two literal line breaks inside string literals, which are syntax errors. Both were fixed on a single line each with the `\n` escape sequence:
+
+- **`splitLines`:** `.split("\n")` — was spread across two lines with a raw newline inside the quotes.
+- **`DuotoneTeamRoster` default title:** `title = "The\ncrew",` — was spread across two lines.
+
+No other change was made to either vendored file.
+
+### 2. Portrait URL verification was not possible at build time
+
+All HTTP requests to Unsplash (both HEAD and GET) timed out in this build environment after multiple 15-second timeout attempts. The Unsplash photo IDs are identical to those in the original spec. If any portrait fails to load, the component displays a monogram plate (initials), which is the designed fallback.
+
+### 3. ESLint overrides in `eslint.config.mjs`
+
+The vendored file trips the following rules. All are disabled only for the two vendored files (not globally):
+- `@typescript-eslint/no-explicit-any` — intentional use for palette/preset tables.
+- `react-hooks/exhaustive-deps` — `setState` inside `useLayoutEffect` / `useEffect` is intentional.
+- `@next/next/no-img-element` — `<img>` is used directly for the SVG filter; `next/image` is not applicable.
+- `@typescript-eslint/no-unused-vars` — vendored file has intermediate destructures.
+- `react-hooks/rules-of-hooks` — `setState` inside a `ResizeObserver` callback inside `useLayoutEffect`.
