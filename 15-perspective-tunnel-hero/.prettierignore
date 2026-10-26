@@ -1,0 +1,3 @@
+# Vendored files — do not reformat these; they are kept verbatim from the original spec.
+components/ui/perspective-tunnel-hero.tsx
+components/perspective-tunnel-hero-demo.tsx
