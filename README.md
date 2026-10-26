@@ -20,6 +20,7 @@ This repository serves as a personal library of frontends. Each frontend lives i
 | 12-ascii-forest | Forest ASCII Art | Next.js, Tailwind, shadcn | `npm install && npm run dev` | 3012 |
 | 13-liquid-sculpture-hero | Liquid Sculpture Hero | Next.js, Tailwind, shadcn | `npm install && npm run dev` | 3013 |
 | 14-duotone-team-roster | Duotone Team Roster | Next.js, Tailwind, shadcn | `npm install && npm run dev` | 3014 |
+| 15-perspective-tunnel-hero | Perspective Tunnel Hero | Next.js, Tailwind, shadcn, framer-motion | `npm install && npm run dev` | 3015 |
 
 ## How to add a new frontend
 
