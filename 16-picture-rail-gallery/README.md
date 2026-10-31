@@ -55,3 +55,57 @@ Open [http://localhost:3016](http://localhost:3016) in your browser.
 - `npm run start`: Starts production server.
 - `npm run lint`: Checks codebase with ESLint.
 - `npm run typecheck`: Runs TypeScript verification (`tsc --noEmit`).
+
+## API Reference
+
+### `PictureRailGalleryProps`
+
+`PictureRailGallery` accepts standard HTML `<section>` attributes in addition to the following props:
+
+| Prop | Type | Default | Description |
+|:-----|:-----|:--------|:------------|
+| `items` | `PictureRailItem[]` | *(required)* | Array of framed artworks hanging on the rail. |
+| `eyebrow` | `string` | `undefined` | Small uppercase text above the main heading. |
+| `heading` | `string` | `undefined` | Primary section heading. |
+| `caption` | `string` | `undefined` | Contextual text shown beneath the wall when no print is currently lit. |
+| `action` | `React.ReactNode` | `undefined` | Call-to-action button or link displayed beneath the caption. |
+| `autoplay` | `boolean` | `false` | Automatically cycles focus through prints on a beat until user interacts. (Note: the demo component defaults `autoplay` to `true`). |
+| `interval` | `number` | `2600` | Duration (ms) each artwork stays illuminated during autoplay cycle. |
+| `active` | `number \| null` | `undefined` | Controlled index of the currently lit artwork. Pass `undefined` for uncontrolled mode. |
+| `onActiveChange` | `(index: number \| null) => void` | `undefined` | Callback invoked when the lit print changes via hover, keyboard, or autoplay. |
+| `onOpenChange` | `(index: number \| null) => void` | `undefined` | Callback invoked when the lift-and-flip 3D detail modal opens or closes. |
+| `labels` | `PictureRailGalleryLabels` | `DEFAULT_LABELS` | Localized string dictionary for UI controls. |
+
+### `PictureRailItem`
+
+Describes each piece of art hanging on the picture rail:
+
+```typescript
+export interface PictureRailItem {
+  id: string;                     // Unique identifier
+  title: string;                  // Accessible name, live caption title, and detail heading
+  artist?: string;                // Artist credit line
+  year?: string;                  // Year of creation/printing
+  image: string;                  // Artwork image URL displayed behind glass
+  aspect?: number;                // Width ÷ height ratio (defaults to 0.8: a 4:5 portrait)
+  frame?: "black" | "oak" | "white"; // Frame moulding profile (defaults to "black")
+  mat?: boolean;                  // Adds a bevel-cut archival mat board around the image
+  drop?: number;                  // Wire length adjustment in frame units (-0.1 to 0.3; 0 aligns centers)
+  tag?: string;                   // Floating wall label tag (e.g. price "$280")
+  details?: string[];             // Back edition lines (e.g. edition size, dimensions, paper type)
+}
+```
+
+### `PictureRailGalleryLabels`
+
+Labels for accessibility and interactive controls:
+
+```typescript
+export interface PictureRailGalleryLabels {
+  front: string; // Default: "Front"
+  back: string;  // Default: "Back"
+  close: string; // Default: "Close"
+  open: string;  // Default: "Lift to view" (shown in the active wall caption)
+}
+```
+
