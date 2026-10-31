@@ -140,4 +140,56 @@ Clicking a frame activates a full-screen interactive modal rendered into `docume
 - **Authentic Verso Backing**: Rotating to the reverse side reveals a realistic wooden frame back, recessed tension wire, screw eyes, corner reinforcement pads, paper framing tape, and a gallery edition label with edition number, medium, and artist signature.
 - **Scroll Lock**: The document body overflow is locked to `hidden` while the detail view is open and restored upon dismissal.
 
+## Images
+
+The gallery demo includes eight photographic prints mirrored from `cdn.21st.dev`:
+
+| ID | Title | Artist | Aspect | Status | Content-Type | Replaced? |
+|:---|:------|:-------|:------:|:------:|:------------:|:---------:|
+| `ochre-curve` | Ochre Curve | Ines Varga | 0.75 | HTTP 200 OK | `image/jpeg` | No (kept verbatim) |
+| `spiral-study` | Spiral Study | Tomas Reyhill | 1.33 | HTTP 200 OK | `image/jpeg` | No (kept verbatim) |
+| `dune-field` | Dune Field | Ada Lindqvist | 0.75 | HTTP 200 OK | `image/jpeg` | No (kept verbatim) |
+| `rain-study` | Rain Study No. 4 | Elio Brandt | 1.00 | HTTP 200 OK | `image/jpeg` | No (kept verbatim) |
+| `still-lake` | Still Lake | Saga Morel | 1.50 | HTTP 200 OK | `image/jpeg` | No (kept verbatim) |
+| `concrete-choir` | Concrete Choir | Pavel Oduya | 0.80 | HTTP 200 OK | `image/jpeg` | No (kept verbatim) |
+| `north-light` | North Light | Ada Lindqvist | 1.50 | HTTP 200 OK | `image/jpeg` | No (kept verbatim) |
+| `tide-line` | Tide Line | Noor Halvorsen | 1.00 | HTTP 200 OK | `image/jpeg` | No (kept verbatim) |
+
+All 8 URLs responded with HTTP 200 OK and `image/jpeg`. As specified, both vendored files (`picture-rail-gallery.tsx` and `picture-rail-gallery-demo.tsx`) are committed 100% verbatim without substitutions.
+
+## Accessibility Features
+
+- **Keyboard Navigation & Roving Tabindex**: The picture rail acts as a coordinated focus group. `ArrowLeft` and `ArrowRight` scrub focus through the artworks; `Home` jumps to the first print, and `End` jumps to the last. Pressing `Enter` or `Space` activates the lift animation into the detail view.
+- **Modal Dialog & Focus Trap**: The 3D detail view operates as an accessible modal dialog (`role="dialog"` and `aria-modal="true"`). Focus traps keyboard tabs inside the dialog, and pressing `Escape` initiates the arched return animation while restoring keyboard focus to the originating print frame on the rail.
+- **Live Screen-Reader Announcements**: A polite ARIA live region (`aria-live="polite"`) announces the artwork title, artist credit, year, and price tag whenever a frame is lit.
+- **Reduced Motion Support**: When `prefers-reduced-motion: reduce` is enabled:
+  - Dynamic physics calculations, wire swinging, and rest tilts are disabled.
+  - The lift-and-flip animation transitions immediately without simulated 3D flight.
+  - Autoplay cycling is deactivated.
+
+## Troubleshooting
+
+- **Frames look flat or the rail is invisible**:
+  Ensure that Tailwind v4 theme variables (`--color-foreground`, `--color-card`, `--color-muted`) are properly emitted by the build compiler. If these tokens are missing, the component's inline CSS gradients fall back to unstyled values.
+- **Missing artwork images**:
+  Verify outbound network access to `https://cdn.21st.dev`. If strict firewall rules or ad blockers intercept CDN requests, check the browser Network panel for failed image assets.
+- **Dragging does not slide frames on mobile devices**:
+  Horizontal rail sliding is disabled in `carousel` mode on smaller viewports. Instead, swipe left or right to navigate through the edition carousel, or tap the pagination dots.
+- **Background page cannot be scrolled while viewing detail**:
+  This is deliberate behavior: opening the 3D detail modal locks `document.body.style.overflow = "hidden"` to prevent background page jitter during 3D rotation.
+
+## Deviations from the Original Spec
+
+1. **Theme Variable Declaration Verification**:
+   The spec required checking whether `--color-foreground:`, `--color-card:`, and `--color-muted:` are declared in the compiled `.next/static` CSS output. Inspection of the emitted Turbopack bundle confirmed that all three custom properties are defined under `:root` and `.dark` (`--color-foreground:var(--foreground);`, `--color-card:var(--card)`, `--color-muted:var(--muted);`). Consequently, no extra globals alias block was required.
+2. **ESLint `@next/next/no-img-element` Exemption**:
+   The vendored `FrameArt` component uses standard HTML `<img>` elements to leverage custom CSS object-fit sizing, dynamic 2x supersampling, asynchronous decode handlers, and continuous 3D transforms. To keep the vendored component verbatim without failing ESLint, `@next/next/no-img-element` was scoped to `"off"` for the vendored files in `eslint.config.mjs`.
+
+## Assumptions
+
+- **Node.js Engine**: Declared `>=20` in `package.json` engines and set `.nvmrc` to `20` to guarantee compatibility with Next.js 16.
+- **Theme Tokens**: Standard shadcn neutral palette was kept in `globals.css` with dark mode support.
+- **Favicon**: Added a dedicated SVG favicon at `app/icon.svg` featuring a miniature picture rail with brass hook, wires, and a framed print.
+
+
 
