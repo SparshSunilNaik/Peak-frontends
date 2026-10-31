@@ -109,3 +109,35 @@ export interface PictureRailGalleryLabels {
 }
 ```
 
+## How It Works
+
+### 1. Dynamic Layout & Responsive Modes
+
+The wall calculates frame geometry from each item's aspect ratio, moulding profile (`black`, `oak`, or `white`), and optional bevelled mat border:
+- **Unit Scaling**: A unit size ($U$) is calculated based on container width ($W$) to fit all artworks along a single horizontal rail ($90\text{px} \le U \le 150\text{px}$).
+- **Automatic Carousel Fallback**: When container width cannot fit the items above the minimum unit ($U < 90\text{px}$), the component automatically transitions to `carousel` mode ($U \le 128\text{px}$). A swipe gesture allows browsing through individual frames, accompanied by a row of navigation indicator dots.
+
+### 2. Physical Pendulum Simulation & Collision Dynamics
+
+Each frame hangs from a brass picture-rail hook by two angled wires, forming a physical compound pendulum:
+- **Spring-Damper Loop**: Driven by a `requestAnimationFrame` loop that sub-steps physics (at intervals $\le 11.5\text{ms}$) up to $100\text{ms}$ per frame. Wire length directly governs swing frequency (longer wires oscillate with a lower period).
+- **Hook Acceleration & Wire Coupling**: Accelerating a frame's hook along the rail induces proportional angular wire torque (`DRAG_COUPLING = 0.16` for active drag, `0.08` for passive momentum).
+- **Momentum Transfer & Contact Resolution**: Frames cannot pass through each other. When frames collide, an iterative 3-pass impulse resolution algorithm pushes them apart and averages horizontal velocity, preventing overlaps and producing secondary chain reactions among adjacent frames.
+- **Natural Wall Imperfection**: Artworks do not hang unnaturally straight: each frame rests with a subtle static tilt between $-1.5^\circ$ and $+1.5^\circ$ (`restTilt`), straightening smoothly as it lifts towards the viewer.
+- **Inertial Sliding & Sleep**: Releasing a dragged frame mid-stroke lets it slide along the rail until friction arrests it. When velocity and displacement drop below threshold tolerances, the simulation shuts off its RAF loop until the next impulse.
+
+### 3. Lighting, Glare & 2x Supersampling
+
+- **Illumination**: When a print becomes active, an integrated brass picture light fixture fades in (`opacity: lit`), casting an atmospheric warm radial wash onto the artwork and the wall behind it.
+- **Dynamic Glare & Shadow**: A directional glass reflection layer shifts horizontally across the picture plane as the frame swings or turns toward the mouse pointer. Ambient drop shadows soften and extend away from the wall.
+- **Retina Crispness (2x Supersampling)**: Rotated 3D CSS transforms can cause Chromium browsers to rasterize layers at low resolutions. To maintain tack-sharp photo quality, frames are laid out at $2\times$ zoom (`SUPERSAMPLE = 2`) and scaled down ($0.5\times$) directly inside the 3D perspective matrix (`transform: perspective(...) scale(...)`).
+
+### 4. Lift-and-Flip 3D Detail View
+
+Clicking a frame activates a full-screen interactive modal rendered into `document.body` via `createPortal`:
+- **FLIP-Style Lift Animation**: Using the Web Animations API, the frame smoothly lifts from its exact screen position on the rail to the center of the viewport with an arched trajectory.
+- **Interactive 3D Rotation**: The frame can be freely spun around its Y-axis by dragging on the 3D stage or toggling the `Front` and `Back` controls.
+- **Authentic Verso Backing**: Rotating to the reverse side reveals a realistic wooden frame back, recessed tension wire, screw eyes, corner reinforcement pads, paper framing tape, and a gallery edition label with edition number, medium, and artist signature.
+- **Scroll Lock**: The document body overflow is locked to `hidden` while the detail view is open and restored upon dismissal.
+
+
