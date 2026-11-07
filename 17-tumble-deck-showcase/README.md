@@ -133,4 +133,33 @@ Each virtual card $k$'s pose is calculated dynamically via `cardPose(k, pos, dep
 - Honors `prefers-reduced-motion`: When enabled, scrubbing and spring easing are bypassed, stepping directly between cards without transitional tweening.
 - Card images specify `draggable={false}` and `decoding="async"`.
 
+---
+
+## Assets & Offline Functionality
+
+- **Inlined WebP Images**: The demo includes nine high-fidelity website showcase templates embedded as base64 WebP data URIs inside `components/tumble-deck-showcase-demo.tsx`. The demo requires zero network connectivity and runs completely offline.
+- **Custom / Remote Images**: You can pass any standard image URLs into `cards`. Because the component uses standard HTML `<img>` elements rather than `next/image`, no Next.js remote pattern configuration (`images.remotePatterns` in `next.config.ts`) or CORS setup is required.
+
+---
+
+## Troubleshooting
+
+1. **Cards look unstyled or floor shading is absent**:
+   The component relies on CSS theme variables `--color-background`, `--color-foreground`, and `--color-primary`. Ensure your application defines these variables or provides fallback values via the `background` prop.
+2. **Page does not scroll while cursor is over the deck**:
+   This is by design. The component attaches non-passive `wheel` listeners that invoke `event.preventDefault()` to enable smooth, precise scrub control of the 3D card tumble.
+3. **Card sizing changes in non-standard viewport ratios**:
+   Card width and height are dynamically computed to ensure the standing deck above and tumbling card below stay comfortably inside container bounds (`top = h + (H - 2 * h) * 0.44`). Extreme aspect ratios scale the card proportionally to avoid clipping.
+4. **Large diffs in demo file**:
+   `components/tumble-deck-showcase-demo.tsx` contains raw base64 data strings. It is listed in `.prettierignore` to prevent automated code formatters from splitting these strings.
+
+---
+
+## Deviations from Original Spec
+
+- **Theme Colour Alias Block**: None needed. Verification of the production build confirmed that Tailwind CSS v4 and shadcn successfully emitted `--color-background:`, `--color-foreground:`, and `--color-primary:` declarations in `.next/static/chunks/*.css`.
+- **ESLint Rule Adjustment**: Added an override in `eslint.config.mjs` disabling `@next/next/no-img-element` for `components/ui/tumble-deck-showcase.tsx` and `components/tumble-deck-showcase-demo.tsx`. The component uses standard `<img>` elements to directly manipulate 3D transform matrices and avoid additional DOM wrappers introduced by Next.js `<Image />`.
+- **TypeScript**: None. Types compiled with zero errors under `tsc --noEmit`.
+
+
 
