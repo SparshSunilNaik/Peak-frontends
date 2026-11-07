@@ -78,3 +78,59 @@ export function deckAdvance(pos: number): number;
 export function cardPose(k: number, pos: number, depth: number): Pose;
 ```
 
+---
+
+## How It Works
+
+### Pure CSS 3D Scene
+The entire tumbling animation is achieved with hardware-accelerated CSS 3D transformations (`preserve-3d`, `rotateX`, `translate3d`). All cards share a single common perspective set to 6 times the card height (`perspective: 6 * h px`), with `perspective-origin` aligned horizontally at 50% and vertically above the deck (`top - 1.66 * h px`). Every card is hinged on the exact same bottom floor line via `transform-origin: 50% 100%`.
+
+### Infinite Linear Deck Coordinate
+A single continuous float, `pos`, represents the deck's progress. As `pos` advances:
+1. When `pos = 0`, card 0 stands upright at the front of the deck.
+2. As `pos` increases from 0 to 1, card 0 tips forward and falls flat onto the floor, while standing cards behind slide forward by one gap.
+3. Once card 0 hits the floor, card 1 is at the front and begins falling as `pos` advances from 1 to 2.
+
+### Slot Pool Recycling
+To maintain peak 60/120fps performance and zero DOM thrashing, the component maintains a small fixed pool of DOM slot elements:
+$$\text{poolSize} = \text{depth} + 5$$
+For a default depth of 5, only 10 DOM elements are ever mounted:
+- Slot $j \in [0, \text{poolSize} - 1]$ is assigned virtual card index $k$ such that $k \equiv j \pmod{\text{poolSize}}$.
+- Virtual card $k$ displays image item $k \pmod n$ using Euclidean modulo `wrap(k, n)`.
+- A slot is only repointed to a new virtual card index when it is completely invisible (either buried below the floor stack at $k \le \lfloor pos \rfloor - 2$ or situated beyond the back of the visible deck at $k > \lfloor pos \rfloor + \text{depth} + 1$).
+
+### Mathematical Pose Formulation
+Each virtual card $k$'s pose is calculated dynamically via `cardPose(k, pos, depth)`:
+- **Falling Card ($k = \lfloor pos \rfloor$)**: 
+  - Progress $t = pos - k \in [0, 1]$.
+  - `fallAngle(t)`: Eases downward with gravitational acceleration ($105.88 t^2$ up to $t \le 0.85$), strikes the floor, kicks upward with a damped bounce, and settles completely flat at $90^\circ$.
+  - `shade`: Front face dims progressively (up to 0.45) as it rotates away from overhead lighting.
+- **Standing Deck Cards ($k > \lfloor pos \rfloor$)**:
+  - Distance behind front line: $u = k - \lfloor pos \rfloor$.
+  - Slide advance: Deck smoothly shifts forward as the front card tumbles via `deckAdvance(pos) = 1 - (1 - (pos - \lfloor pos \rfloor))^2$.
+  - Depth position: $z = -(u - \text{advance})$, with subtle perspective fade at the rear (`opacity` tapers off for $u > \text{depth}$).
+- **Floor Pile Cards ($k < \lfloor pos \rfloor$)**:
+  - Flat on floor at $90^\circ$ rotateX.
+  - Layering lift: `lift = -1.2px * (k - floorBase)` ensures the newest card cleanly overlaps older ones without Z-fighting.
+  - Only the latest two floor cards are rendered; older cards are clipped to `opacity = 0`.
+
+---
+
+## Interaction & Accessibility
+
+### Control Schemes
+- **Wheel / Trackpad**: Non-passive scroll listener captures wheel delta and pushes `targetPos`. Deck position smoothly chases `targetPos` using a GSAP ticker loop (`pos += (targetPos - pos) * 0.14`). When wheel input ceases for 140ms, the deck snaps cleanly to `Math.round(targetPos)`.
+- **Drag & Scrub**: Pointer listeners track mouse or touch drag. Dragging scrubs the deck at a rate of 1 card per 1.1 card heights. Pointer release applies flick momentum clamped to at most 3 cards.
+- **Click**: Clicking anywhere on the deck advances to the next card (`targetPos + 1`).
+- **Keyboard**: 
+  - `ArrowRight`, `ArrowDown`, `Space`, or `Enter`: Advance forward by 1 card.
+  - `ArrowLeft` or `ArrowUp`: Step backward by 1 card.
+
+### Accessibility (a11y)
+- Root container is marked as `role="region"` with `aria-roledescription="carousel"` and `aria-label`.
+- Fully keyboard-focusable with a distinct `focus-visible` outline using `var(--color-primary)`.
+- Includes a visually hidden live region (`aria-live="polite"`) announcing the total page count and available interaction methods.
+- Honors `prefers-reduced-motion`: When enabled, scrubbing and spring easing are bypassed, stepping directly between cards without transitional tweening.
+- Card images specify `draggable={false}` and `decoding="async"`.
+
+
