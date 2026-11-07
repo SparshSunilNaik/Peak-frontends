@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <rect width="32" height="32" rx="6" fill="#18181b"/>
+  <!-- Floor line -->
+  <line x1="4" y1="26" x2="28" y2="26" stroke="#3f3f46" stroke-width="1.5" stroke-linecap="round"/>
+  <!-- Tumbled flat card on floor -->
+  <polygon points="6,25 26,25 24,22 8,22" fill="#71717a" opacity="0.6"/>
+  <!-- Upright card tipping forward -->
+  <polygon points="7,22 25,22 23,13 9,13" fill="#a1a1aa"/>
+  <!-- Standing deck cards behind -->
+  <rect x="9" y="8" width="14" height="7" rx="1" fill="#e4e4e7" stroke="#27272a" stroke-width="0.5"/>
+  <rect x="10" y="5" width="12" height="6" rx="1" fill="#71717a" opacity="0.5"/>
+</svg>
