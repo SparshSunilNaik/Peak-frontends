@@ -13,6 +13,19 @@ const eslintConfig = defineConfig([
     "build/**",
     "next-env.d.ts",
   ]),
+  // Vendored files (components/ui/tumble-deck-showcase.tsx and
+  // components/tumble-deck-showcase-demo.tsx) are kept verbatim from the
+  // spec. Disable only the rule they trip (@next/next/no-img-element)
+  // because plain <img> elements are used for 3D card rendering without next/image wrapper overhead.
+  {
+    files: [
+      "components/ui/tumble-deck-showcase.tsx",
+      "components/tumble-deck-showcase-demo.tsx",
+    ],
+    rules: {
+      "@next/next/no-img-element": "off",
+    },
+  },
 ]);
 
 export default eslintConfig;
